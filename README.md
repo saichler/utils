@@ -7,13 +7,13 @@ A Yaml file Parser and Yaml File creator that creates an easy to use tree model 
 
 ## Yaml Parser Example
 
-#### package examples
-####
-#### import (
-####	. "github.com/saichler/utils/golang"
-####	"io/ioutil"
-####	"os"
-#### )
+    package examples
+    
+    import (
+    	. "github.com/saichler/utils/golang"
+    	"io/ioutil"
+    	"os"
+    )
 
 func Parse_yaml_file(yamlfile string) (*YamlNode, error){
 	_,e := os.Stat(yamlfile)
