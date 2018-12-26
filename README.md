@@ -15,11 +15,11 @@ A Yaml file Parser and Yaml File creator that creates an easy to use tree model 
     	"os"
     )
 
-func Parse_yaml_file(yamlfile string) (*YamlNode, error){
-	_,e := os.Stat(yamlfile)
-	if e!=nil {
-		return nil,e
-	}
+    func Parse_yaml_file(yamlfile string) (*YamlNode, error){
+    	_,e := os.Stat(yamlfile)
+    	if e!=nil {
+    		return nil,e
+    	}
 
 	buff,e := ioutil.ReadFile(yamlfile)
 	if e!=nil {
@@ -33,16 +33,16 @@ func Parse_yaml_file(yamlfile string) (*YamlNode, error){
 	Parse(data,yamlfile,modelRoot)
 
 	return modelRoot,nil
-}
+    }
 
-func Create_yaml_file(yamlfile string) {
+    func Create_yaml_file(yamlfile string) {
 	modelRoot:=NewYamlRoot()
 	
 	child:=&YamlNode{}
 	child.Init("tag","value",modelRoot.GetLvl()+1)
 	modelRoot.AddChild(child)
 	ioutil.WriteFile(yamlfile,[]byte(modelRoot.String()),0777)
-}
+    }
 
 SqlST - An slq.ST wrapper that makes it easy to create sql parepare statements without the need to manage the parameters numbers and types.
 
