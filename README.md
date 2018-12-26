@@ -16,23 +16,20 @@ A Yaml file Parser and Yaml File creator that creates an easy to use tree model 
     )
 
     func Parse_yaml_file(yamlfile string) (*YamlNode, error){
-    	_,e := os.Stat(yamlfile)
-    	if e!=nil {
-    		return nil,e
-    	}
+        _,e := os.Stat(yamlfile)
+        if e!=nil {
+            return nil,e
+        }
 
-	buff,e := ioutil.ReadFile(yamlfile)
-	if e!=nil {
-		return nil,e
-	}
+        buff,e := ioutil.ReadFile(yamlfile)
+        if e!=nil {
+            return nil,e
+        }
 
-	data := string(buff)
-
-	modelRoot:=NewYamlRoot()
-
-	Parse(data,yamlfile,modelRoot)
-
-	return modelRoot,nil
+        data := string(buff)
+        modelRoot:=NewYamlRoot()
+        Parse(data,yamlfile,modelRoot)
+        return modelRoot,nil
     }
 
     func Create_yaml_file(yamlfile string) {
