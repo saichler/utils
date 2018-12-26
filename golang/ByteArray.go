@@ -111,12 +111,19 @@ func (ba *ByteArray) GetBool() bool {
 	return result
 }
 
-func NewByteArrayWithData(data []byte) *ByteArray {
-	ba := ByteArray{}
-	ba.data = data
-	return &ba
+func NewByteArray() *ByteArray {
+	ba := &ByteArray{}
+	ba.data = make([]byte,0)
+	return ba
 }
 
-func (ba*ByteArray) GetData()[]byte {
+func NewByteArrayWithData(data []byte,loc int) *ByteArray {
+	ba := &ByteArray{}
+	ba.data = data
+	ba.loc = loc
+	return ba
+}
+
+func (ba*ByteArray) Data()[]byte {
 	return ba.data
 }
