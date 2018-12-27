@@ -1,4 +1,4 @@
-package dsutils
+package utils
 
 import "sync"
 

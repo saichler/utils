@@ -8,7 +8,7 @@ import (
 )
 
 func insertToTableExample(tx *sql.Tx) {
-	st:=dsutils.CreateInsertStatement("MyTable")
+	st:= utils.CreateInsertStatement("MyTable")
 	st.AddColumn("Name","MyName")
 	st.AddColumn("FamilyName","My Family Name")
 	st.AddColumn("Age",5)
@@ -19,7 +19,7 @@ func insertToTableExample(tx *sql.Tx) {
 }
 
 func selectFromTableExample(tx *sql.Tx) {
-	st:=dsutils.CreateSelectStatement("MyTable","#1 AND #2")
+	st:= utils.CreateSelectStatement("MyTable","#1 AND #2")
 	st.AddColumn("Name","")
 	st.AddCriteriaColumn("FamilyName","My Family Name")
 	st.AddCriteriaColumn("Age",5)
