@@ -54,6 +54,14 @@ func (ba *ByteArray) GetInt64() int64 {
 	return result
 }
 
+func (ba *ByteArray) AddInt(i int) {
+	ba.AddInt32(int32(i))
+}
+
+func (ba *ByteArray) GetInt() int {
+	return int(ba.GetInt32())
+}
+
 func (ba *ByteArray) AddInt32(i32 int32) {
 	long := make([]byte, 4)
 	binary.LittleEndian.PutUint32(long,uint32(i32))
@@ -124,6 +132,21 @@ func NewByteArrayWithData(data []byte,loc int) *ByteArray {
 	return ba
 }
 
-func (ba*ByteArray) Data()[]byte {
+func (ba *ByteArray) Data()[]byte {
 	return ba.data
+}
+
+func (ba *ByteArray) Put(key, value []byte) {
+	ba.AddByteArray(key)
+	ba.AddByteArray(value)
+}
+
+func (ba *ByteArray) Get() ([]byte,[]byte) {
+	key := ba.GetByteArray()
+	value := ba.GetByteArray()
+	return key, value
+}
+
+func (ba *ByteArray) IsEOF() bool {
+	return ba.loc==len(ba.data)
 }
