@@ -9,12 +9,7 @@ type ByteSlice struct {
 	loc int
 }
 
-func (ba *ByteSlice) Reset() {
-	ba.data = ba.data[0:0]
-	ba.loc=0
-}
-
-func (ba *ByteSlice) AddByteArray(data []byte){
+func (ba *ByteSlice) AddByteSlice(data []byte){
 	ba.AddUInt32(uint32(len(data)))
 	ba.data = append(ba.data, data...)
 	ba.loc+=len(data)
@@ -25,7 +20,7 @@ func (ba *ByteSlice) Add(data []byte){
 	ba.loc+=len(data)
 }
 
-func (ba *ByteSlice) GetByteArray() []byte {
+func (ba *ByteSlice) GetByteSlice() []byte {
 	size := int(ba.GetUInt32())
 	result := ba.data[ba.loc:ba.loc+size]
 	ba.loc+=size
@@ -147,13 +142,13 @@ func (ba *ByteSlice) Loc() int {
 }
 
 func (ba *ByteSlice) Put(key, value []byte) {
-	ba.AddByteArray(key)
-	ba.AddByteArray(value)
+	ba.AddByteSlice(key)
+	ba.AddByteSlice(value)
 }
 
 func (ba *ByteSlice) Get() ([]byte,[]byte) {
-	key := ba.GetByteArray()
-	value := ba.GetByteArray()
+	key := ba.GetByteSlice()
+	value := ba.GetByteSlice()
 	return key, value
 }
 
