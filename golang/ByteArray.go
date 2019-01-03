@@ -1,23 +1,29 @@
 package utils
 
-import (
-	"encoding/binary"
+const (
+	size=600
 )
 
 type ByteArray struct {
-	data []byte
+	data [size]byte
 	loc int
 }
 
-func (ba *ByteArray) Add(data []byte){
-	ba.data = append(ba.data,data...)
-	ba.loc+=len(data)
+func (ba *ByteArray) Init(data []byte) {
+	copy(ba.data[0:],data[0:])
+	ba.loc=0
+}
+
+func (ba *ByteArray) Reset() {
+	ba.loc=0
 }
 
 func (ba *ByteArray) AddByteArray(data []byte){
 	ba.AddUInt32(uint32(len(data)))
-	ba.data = append(ba.data,data...)
-	ba.loc+=len(data)+4
+	for i:=0;i<len(data);i++ {
+		ba.data[ba.loc+i]=data[i]
+	}
+	ba.loc+=len(data)
 }
 
 func (ba *ByteArray) GetByteArray() []byte {
@@ -30,8 +36,10 @@ func (ba *ByteArray) GetByteArray() []byte {
 func (ba *ByteArray) AddString(str string){
 	data := []byte(str)
 	ba.AddUInt32(uint32(len(data)))
-	ba.data = append(ba.data,data...)
-	ba.loc+=len(data)+4
+	for i:=0;i<len(data);i++ {
+		ba.data[ba.loc+i]=data[i]
+	}
+	ba.loc+=len(data)
 }
 
 func (ba *ByteArray) GetString() string {
@@ -42,14 +50,12 @@ func (ba *ByteArray) GetString() string {
 }
 
 func (ba *ByteArray) AddInt64(i64 int64) {
-	long := make([]byte, 8)
-	binary.LittleEndian.PutUint64(long,uint64(i64))
-	ba.data = append(ba.data,long...)
+	ba.addInt64(i64)
 	ba.loc+=8
 }
 
 func (ba *ByteArray) GetInt64() int64 {
-	result := int64(binary.LittleEndian.Uint64(ba.data[ba.loc:ba.loc+8]))
+	result := ba.getInt64()
 	ba.loc+=8;
 	return result
 }
@@ -63,50 +69,44 @@ func (ba *ByteArray) GetInt() int {
 }
 
 func (ba *ByteArray) AddInt32(i32 int32) {
-	long := make([]byte, 4)
-	binary.LittleEndian.PutUint32(long,uint32(i32))
-	ba.data = append(ba.data,long...)
+	ba.addInt32(i32)
 	ba.loc+=4
 }
 
 func (ba *ByteArray) GetInt32() int32 {
-	result := int32(binary.LittleEndian.Uint32(ba.data[ba.loc:ba.loc+4]))
+	result := ba.getInt32()
 	ba.loc+=4;
 	return result
 }
 
 func (ba *ByteArray) AddUInt16(i16 uint16) {
-	long := make([]byte, 2)
-	binary.LittleEndian.PutUint16(long, i16)
-	ba.data = append(ba.data,long...)
+	ba.addUInt16(i16)
 	ba.loc+=2
 }
 
 func (ba *ByteArray) GetUInt16() uint16 {
-	result := binary.LittleEndian.Uint16(ba.data[ba.loc:ba.loc+2])
+	result := ba.getUInt16()
 	ba.loc+=2;
 	return result
 }
 
 func (ba *ByteArray) AddUInt32(i32 uint32) {
-	long := make([]byte, 4)
-	binary.LittleEndian.PutUint32(long, i32)
-	ba.data = append(ba.data,long...)
+	ba.addInt32(int32(i32))
 	ba.loc+=4
 }
 
 func (ba *ByteArray) GetUInt32() uint32 {
-	result := binary.LittleEndian.Uint32(ba.data[ba.loc:ba.loc+4])
+	result := uint32(ba.getInt32())
 	ba.loc+=4;
 	return result
 }
 
 func (ba *ByteArray) AddBool(b bool){
-	stat := make([]byte,1)
+	sb := byte(0)
 	if b {
-		stat[0] = 1
+		sb = 1
 	}
-	ba.data = append(ba.data, stat...)
+	ba.data[ba.loc]=sb
 	ba.loc+=1
 }
 
@@ -121,19 +121,23 @@ func (ba *ByteArray) GetBool() bool {
 
 func NewByteArray() *ByteArray {
 	ba := &ByteArray{}
-	ba.data = make([]byte,0)
+	ba.loc = 0
 	return ba
 }
 
 func NewByteArrayWithData(data []byte,loc int) *ByteArray {
 	ba := &ByteArray{}
-	ba.data = data
+	copy(ba.data[0:],data)
 	ba.loc = loc
 	return ba
 }
 
 func (ba *ByteArray) Data()[]byte {
-	return ba.data
+	return ba.data[0:ba.loc]
+}
+
+func (ba *ByteArray) Loc() int {
+	return ba.loc
 }
 
 func (ba *ByteArray) Put(key, value []byte) {
@@ -149,4 +153,50 @@ func (ba *ByteArray) Get() ([]byte,[]byte) {
 
 func (ba *ByteArray) IsEOF() bool {
 	return ba.loc==len(ba.data)
+}
+
+func (ba *ByteArray) addInt64(num int64) {
+	ba.data[ba.loc+0] = byte(num)
+	ba.data[ba.loc+1] = byte(num >> 8)
+	ba.data[ba.loc+2] = byte(num >> 16)
+	ba.data[ba.loc+3] = byte(num >> 24)
+	ba.data[ba.loc+4] = byte(num >> 32)
+	ba.data[ba.loc+5] = byte(num >> 40)
+	ba.data[ba.loc+6] = byte(num >> 48)
+	ba.data[ba.loc+7] = byte(num >> 56)
+}
+
+func (ba *ByteArray) getInt64() int64 {
+	return int64(ba.data[ba.loc+0]) |
+		   int64(ba.data[ba.loc+1])<<8 |
+		   int64(ba.data[ba.loc+2])<<16 |
+		   int64(ba.data[ba.loc+3])<<24 |
+		   int64(ba.data[ba.loc+4])<<32 |
+		   int64(ba.data[ba.loc+5])<<40 |
+		   int64(ba.data[ba.loc+6])<<48 |
+		   int64(ba.data[ba.loc+7])<<56
+}
+
+func (ba *ByteArray) addInt32(num int32) {
+	ba.data[ba.loc+0] = byte(num)
+	ba.data[ba.loc+1] = byte(num >> 8)
+	ba.data[ba.loc+2] = byte(num >> 16)
+	ba.data[ba.loc+3] = byte(num >> 24)
+}
+
+func (ba *ByteArray) getInt32() int32 {
+	return int32(ba.data[ba.loc+0]) |
+		   int32(ba.data[ba.loc+1])<<8 |
+		   int32(ba.data[ba.loc+2])<<16 |
+		   int32(ba.data[ba.loc+3])<<24
+}
+
+func (ba *ByteArray) addUInt16(num uint16) {
+	ba.data[ba.loc+0] = byte(num)
+	ba.data[ba.loc+1] = byte(num >> 8)
+}
+
+func (ba *ByteArray) getUInt16() uint16 {
+	return uint16(ba.data[ba.loc+0]) |
+		   uint16(ba.data[ba.loc+1])<<8
 }
