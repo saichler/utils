@@ -2,15 +2,10 @@ package utils
 
 import (
 	"bytes"
-	"crypto/md5"
 	"database/sql"
-	"encoding/base64"
-	log "github.com/sirupsen/logrus"
 	"reflect"
 	"strconv"
 	"strings"
-	"sync"
-	"time"
 )
 
 const (
@@ -41,35 +36,31 @@ type TxCacheEntry struct {
 	statements map[string]*sql.Stmt
 }
 
-var lastCacheSwipe = time.Now().Unix()
-var txCache = make(map[*sql.Tx]*TxCacheEntry)
-var txMutex = &sync.Mutex{}
-
 func CreateInsertStatement(tableName string) *SqlST {
 	s := createStatement(tableName,"")
 	s.statementType = STATEMENT_TYPE_INSERT
-	log.Debug("Created an Insert SqlST for table ", tableName)
+	Debug("Created an Insert SqlST for table ", tableName)
 	return s
 }
 
 func CreateUpdateStatement(tableName string, criteria string) *SqlST {
 	s := createStatement(tableName,criteria)
 	s.statementType = STATEMENT_TYPE_UPDATE
-	log.Debug("Created an Update SqlST for table ", tableName)
+	Debug("Created an Update SqlST for table ", tableName)
 	return s
 }
 
 func CreateDeleteStatement(tableName string, criteria string) *SqlST {
 	s := createStatement(tableName,criteria)
 	s.statementType = STATEMENT_TYPE_DELETE
-	log.Debug("Created a Delete SqlST for table ", tableName)
+	Debug("Created a Delete SqlST for table ", tableName)
 	return s
 }
 
 func CreateSelectStatement(tableName string, criteria string) *SqlST {
 	s := createStatement(tableName,criteria)
 	s.statementType = STATEMENT_TYPE_SELECT
-	log.Debug("Created a Select SqlST for table ", tableName)
+	Debug("Created a Select SqlST for table ", tableName)
 	return s
 }
 
@@ -96,60 +87,10 @@ func (s *SqlST) AddCriteriaColumn(name string, value interface{}){
 	s.cParameters[index] = name
 }
 
-func putStatementInCache(tx *sql.Tx,stmt *sql.Stmt,md5key string) {
-	txEntry:=txCache[tx]
-	txEntry.statements[md5key] = stmt
-}
-
-func cleanCache(){
-	now:=time.Now().Unix()
-	if now-lastCacheSwipe>= CACHE_CLEAN_TIMEOUT {
-		log.Info("***** SqlST Cache being cleaned...")
-		lastCacheSwipe = now
-		entriesToRemove := make([]*sql.Tx, 0)
-		for k, v := range txCache {
-			if now-v.timeStamp >= CACHE_ENTRY_TIMEOUT {
-				entriesToRemove = append(entriesToRemove, k)
-			}
-		}
-		for _, k := range entriesToRemove {
-			delete(txCache, k)
-		}
-		log.Info("***** SqlST Cache was cleaned, "+strconv.Itoa(len(entriesToRemove))+" were removed.")
-	}
-}
-
-func getCachedStatement(tx *sql.Tx,sqlQuery string) (*sql.Stmt,string) {
-	cleanCache()
-	md5:=md5.Sum([]byte(sqlQuery))
-	md5Key:= base64.StdEncoding.EncodeToString(md5[:])
-	txEntry:=txCache[tx]
-	if txEntry==nil {
-		txEntry = &TxCacheEntry{}
-		txEntry.statements = make(map[string]*sql.Stmt)
-		txCache[tx]=txEntry
-	}
-	return txEntry.statements[md5Key],md5Key
-}
-
 func (s *SqlST) prepareStatement(db_tx *sql.Tx, sqlQuery string) error{
-
-	defer txMutex.Unlock()
-	txMutex.Lock()
-
-	statement,md5key:=getCachedStatement(db_tx,sqlQuery)
-	if statement!=nil {
-		s.statement = statement
-		return nil
-	}
-
-	log.Debug("Going to execute prepare statement for the following sql:",sqlQuery)
+	Debug("Going to execute prepare statement for the following sql:",sqlQuery)
 	newStatement, err := db_tx.Prepare(sqlQuery)
 	s.statement = newStatement
-
-	if err==nil {
-		putStatementInCache(db_tx,newStatement,md5key)
-	}
 	return err
 }
 
@@ -376,17 +317,17 @@ func (st *SqlST)Exec(db_tx *sql.Tx) (sql.Result, error) {
 
 	err := st.prepareStatement(db_tx, sql.String())
 	if err!=nil {
-		log.Error("Failed to prepare statement due to the following error:", err)
+		Error("Failed to prepare statement due to the following error:", err)
 		return nil,err
 	}
-	log.Debug("Prepare statement was successful, going to execute the statement")
+	Debug("Prepare statement was successful, going to execute the statement")
 	result,err := st.executeStatement(db_tx)
 	if err!=nil {
-		log.Error("Failed to execute statement due to the following error:", err)
+		Error("Failed to execute statement due to the following error:", err)
 		panic("p")
 		return nil,err
 	}
-	log.Debug("SqlST was executed successfully!")
+	Debug("SqlST was executed successfully!")
 	return result,nil
 }
 
@@ -394,16 +335,16 @@ func (st *SqlST)Query(db_tx *sql.Tx) (*sql.Rows, error) {
 	sql := st.BuildSelectStatement()
 	err := st.prepareStatement(db_tx, sql.String())
 	if err!=nil {
-		log.Error("Failed to prepare statement due to the following error:", err)
+		Error("Failed to prepare statement due to the following error:", err)
 		return nil,err
 	}
-	log.Debug("Prepare statement was successful, going to execute the statement")
+	Debug("Prepare statement was successful, going to execute the statement")
 	result,err := st.queryStatement(db_tx)
 	if err!=nil {
-		log.Error("Failed to query statement due to the following error:", err)
+		Error("Failed to query statement due to the following error:", err)
 		return nil,err
 	}
-	log.Debug("SqlST was executed successfully!")
+	Debug("SqlST was executed successfully!")
 	return result,nil
 }
 
@@ -411,10 +352,10 @@ func (st *SqlST)QueryRow(db_tx *sql.Tx) (*sql.Row) {
 	sql := st.BuildSelectStatement()
 	err := st.prepareStatement(db_tx, sql.String())
 	if err!=nil {
-		log.Error("Failed to prepare statement due to the following error:", err)
+		Error("Failed to prepare statement due to the following error:", err)
 		return nil
 	}
-	log.Debug("Prepare statement was successful, going to execute the statement")
+	Debug("Prepare statement was successful, going to execute the statement")
 	return st.queryRowStatement(db_tx)
 }
 
