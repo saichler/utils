@@ -15,6 +15,17 @@ func (ba *ByteSlice) AddByteSlice(data []byte){
 	ba.loc+=len(data)
 }
 
+func (ba *ByteSlice) AddByte(data byte){
+	ba.data = append(ba.data, data)
+	ba.loc++
+}
+
+func (ba *ByteSlice) GetByte() byte {
+	result:=ba.data[ba.loc]
+	ba.loc++
+	return result
+}
+
 func (ba *ByteSlice) Add(data []byte){
 	ba.data = append(ba.data, data...)
 	ba.loc+=len(data)
@@ -154,4 +165,21 @@ func (ba *ByteSlice) Get() ([]byte,[]byte) {
 
 func (ba *ByteSlice) IsEOF() bool {
 	return ba.loc==len(ba.data)
+}
+
+func EncodeBoolAndUInt7(b bool,i int) byte {
+	if b {
+		return (1<<7)+byte(i)
+	}
+	return byte(i)
+}
+
+func DecodeBoolAndUInt7(byt byte) (bool,int) {
+	b:=false
+	n:=byt>>7
+	if n==1 {
+		b=true
+	}
+	i:= uint8(byt-(n<<7))
+	return b,int(i)
 }
