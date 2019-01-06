@@ -21,6 +21,9 @@ func (ba *ByteSlice) AddByte(data byte){
 }
 
 func (ba *ByteSlice) GetByte() byte {
+	if ba.loc == len(ba.data){
+		return 0
+	}
 	result:=ba.data[ba.loc]
 	ba.loc++
 	return result
