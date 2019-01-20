@@ -1,6 +1,8 @@
 package utils
 
-import "sync"
+import (
+	"sync"
+)
 
 type ConcurrentMap struct {
 	innerMap map[interface{}]interface{}
