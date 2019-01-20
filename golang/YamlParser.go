@@ -31,6 +31,17 @@ func removeQuotes(str string) string {
 	return result
 }
 
+func StartWith(str,start string) bool {
+	str=Trim(str)
+	if len(str)<len(start) {
+		return false
+	}
+	if str[0:len(start)]==start {
+		return true
+	}
+	return false
+}
+
 func Trim(str string) string {
 	begin:=true
 	result:=""
