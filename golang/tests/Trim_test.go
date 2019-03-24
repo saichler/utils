@@ -1,4 +1,4 @@
-package dbutil
+package tests
 
 import (
 	"github.com/saichler/utils/golang"
