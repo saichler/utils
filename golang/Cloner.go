@@ -14,6 +14,8 @@ func initCloners() {
 		cloners[reflect.Map]=mapCloner
 		cloners[reflect.Bool]=boolCloner
 		cloners[reflect.Int64]=int64Cloner
+		cloners[reflect.Uint]=uintCloner
+		cloners[reflect.Uint32]=uint32Cloner
 	}
 }
 
@@ -91,6 +93,16 @@ func mapCloner(value reflect.Value) reflect.Value {
 func intCloner(value reflect.Value) reflect.Value {
 	i:=value.Int()
 	return reflect.ValueOf(int(i))
+}
+
+func uintCloner(value reflect.Value) reflect.Value {
+	i:=value.Uint()
+	return reflect.ValueOf(uint(i))
+}
+
+func uint32Cloner(value reflect.Value) reflect.Value {
+	i:=value.Uint()
+	return reflect.ValueOf(uint32(i))
 }
 
 func boolCloner(value reflect.Value) reflect.Value {

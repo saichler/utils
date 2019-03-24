@@ -8,6 +8,8 @@ type TestModel struct {
 	Val2  int32
 	Val3  bool
 	Val4 int64
+	Val5 uint
+	Val6 uint32
 	Node *TestNode
 	Node2Nil *TestNode
 	Nodes []*TestNode
