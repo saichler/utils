@@ -2,33 +2,88 @@ package tests
 
 import "strconv"
 
-type TestModel struct {
-	Name string
-	Val1  int
-	Val2  int32
-	Val3  bool
-	Val4 int64
-	Val5 uint
-	Val6 uint32
-	Node *TestNode
-	Node2Nil *TestNode
-	Nodes []*TestNode
-	Nodes2Nil []*TestNode
+type Node struct {
+	String string
+	Int  int
+	Int32  int32
+	Bool  bool
+	Int64 int64
+	Uint uint
+	Uint32 uint32
+	Uint64 uint64
+	Float32 float32
+	Float64 float64
+	Ptr *Node
+	NilPtr *Node
+	SliceOfPtr []*Node
+	NilSliceOfPtr []*Node
+	SliceInt []int
+	SliceString []string
+	MapStringPtr map[string]*Node
+	MapStringPtrNil map[string]*Node
+	MapIntString map[int]string
+	SubNode1Slice []*SubNode1
+	SubNode2Slice []*SubNode2
 }
 
-type TestNode struct {
-	NodeName string
+type SubNode1 struct {
+	String string
 	IntSlice []int
 	IntSliceNil []int
 	StringSlice []string
-	MapOfPtr map[string]*TestNode
-	MaoOfPtrNil map[string]*TestNode
+	MapOfPtr map[string]*Node
+	MaoOfPtrNil map[string]*Node
 	MapIntToStr map[int]string
 }
 
-func InitTestModel() *TestModel {
-	tm:=&TestModel{}
-	tm.Name = "Model Test"
+type SubNode2 struct {
+	String string
+	IntSlice []int
+	IntSliceNil []int
+	StringSlice []string
+	MapOfPtr map[string]*Node
+	MaoOfPtrNil map[string]*Node
+	MapIntToStr map[int]string
+	SliceInSlice []*SubNode3
+}
+
+type SubNode3 struct {
+	String string
+	IntSlice []int
+	IntSliceNil []int
+	StringSlice []string
+	MapOfPtr map[string]*Node
+	MaoOfPtrNil map[string]*Node
+	MapIntToStr map[int]string
+}
+
+func InitTestModel() *Node {
+	n:=&Node{}
+	n.String = "String"
+	n.Int = -101
+	n.Int32 = -102
+	n.Bool = true
+	n.Int64 = -103
+	n.Uint = 104
+	n.Uint32 = 105
+	n.Uint64 = 106
+	n.Float32 = -107.23
+	n.Float64 = -108.25
+
+	Ptr *Node
+	NilPtr *Node
+	SliceOfPtr []*Node
+	NilSliceOfPtr []*Node
+	SliceInt []int
+	SliceString []string
+	MapStringPtr map[string]*Node
+	MapStringPtrNil map[string]*Node
+	MapIntString map[int]string
+	SubNode1Slice []*SubNode1
+	SubNode2Slice []*SubNode2
+
+
+
 	tm.Val1 = 153
 	tm.Val2 = 32
 	tn:=&TestNode{}
