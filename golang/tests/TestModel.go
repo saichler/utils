@@ -57,61 +57,51 @@ type SubNode3 struct {
 	MapIntToStr map[int]string
 }
 
-func InitTestModel() *Node {
-	n:=&Node{}
-	n.String = "String"
-	n.Int = -101
-	n.Int32 = -102
-	n.Bool = true
-	n.Int64 = -103
-	n.Uint = 104
-	n.Uint32 = 105
-	n.Uint64 = 106
-	n.Float32 = -107.23
-	n.Float64 = -108.25
-
-	Ptr *Node
-	NilPtr *Node
-	SliceOfPtr []*Node
-	NilSliceOfPtr []*Node
-	SliceInt []int
-	SliceString []string
-	MapStringPtr map[string]*Node
-	MapStringPtrNil map[string]*Node
-	MapIntString map[int]string
-	SubNode1Slice []*SubNode1
-	SubNode2Slice []*SubNode2
-
-
-
-	tm.Val1 = 153
-	tm.Val2 = 32
-	tn:=&TestNode{}
-	tm.Node = tn
-	tm.Nodes = buildNodes(10)
-	tn.NodeName = "node name"
-	return tm
-}
-
-func buildNode(loc int) *TestNode {
-	node:=&TestNode{}
-	node.NodeName = "Node #"+strconv.Itoa(loc)
-	node.IntSlice = make([]int,2)
-	node.IntSlice[1] = loc
-	node.StringSlice = make([]string,2)
-	node.StringSlice[1] = "str="+strconv.Itoa(loc)
-	node.MapOfPtr = make(map[string]*TestNode,3)
-	node.MapOfPtr["B"]=&TestNode{}
-	node.MapOfPtr["B"].NodeName = "Map="+strconv.Itoa(loc)
-	node.MapIntToStr = make(map[int]string)
-	node.MapIntToStr[44] = "44"
-	return node
-}
-
-func buildNodes(size int) []*TestNode {
-	nodes:=make([]*TestNode,size)
-	for i:=0;i<size/2;i++ {
-		nodes[i] = buildNode(i)
+func createSubChild(loc int) []*Node {
+	result:=make([]*Node,4)
+	for i:=0;i<4;i++ {
+		n:=&Node{}
+		n.String = strconv.Itoa(loc)+"-Sub-Child-"+strconv.Itoa(i)
+		n.SliceInt = make([]int,3)
+		n.SliceInt[1]=544
+		n.SliceString = make([]string,3)
+		n.SliceString[1]="S1"
+		n.MapStringPtr = make(map[string]*Node)
+		n.MapStringPtr["B"]=&Node{}
+		n.MapStringPtr["B"].String = "str"
+		result[i] = n
 	}
-	return nodes
+	return result
+}
+
+func InitTestModel(size int) []*Node {
+	result:=make([]*Node,size)
+	for i:=0;i<size;i++ {
+		n:=&Node{}
+		n.String = "String-"+strconv.Itoa(i)
+		n.Int = -101
+		n.Int32 = -102
+		n.Bool = true
+		n.Int64 = -103
+		n.Uint = 104
+		n.Uint32 = 105
+		n.Uint64 = 106
+		n.Float32 = -107.23
+		n.Float64 = -108.25
+		n.Ptr = &Node{}
+		n.Ptr.String = "OnlyChild-"+n.String
+		n.SliceOfPtr = createSubChild(i)
+		n.SliceInt = make([]int,5)
+		n.SliceInt[3] = 104
+		n.SliceString = make([]string,7)
+		n.SliceString[3]="303"
+		n.MapStringPtr = make(map[string]*Node)
+		for _,child:=range n.SliceOfPtr {
+			n.MapStringPtr[child.String]=child
+		}
+		n.MapIntString=make(map[int]string)
+		n.MapIntString[3] = "3"
+		result[i] = n
+	}
+	return result
 }
