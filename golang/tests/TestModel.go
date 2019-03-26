@@ -19,7 +19,7 @@ type Node struct {
 	NilSliceOfPtr []*Node
 	SliceInt []int
 	SliceString []string
-	MapStringPtr map[string]*Node
+	MapStringPtr map[string]*SubNode4
 	MapStringPtrNil map[string]*Node
 	MapIntString map[int]string
 	SubNode1Slice []*SubNode1
@@ -57,6 +57,16 @@ type SubNode3 struct {
 	MapIntToStr map[int]string
 }
 
+type SubNode4 struct {
+	String string
+	IntSlice []int
+	IntSliceNil []int
+	StringSlice []string
+	MapOfPtr map[string]*Node
+	MaoOfPtrNil map[string]*Node
+	MapIntToStr map[int]string
+}
+
 func createSubChild(loc int) []*Node {
 	result:=make([]*Node,4)
 	for i:=0;i<4;i++ {
@@ -66,10 +76,19 @@ func createSubChild(loc int) []*Node {
 		n.SliceInt[1]=544
 		n.SliceString = make([]string,3)
 		n.SliceString[1]="S1"
-		n.MapStringPtr = make(map[string]*Node)
-		n.MapStringPtr["B"]=&Node{}
+		n.MapStringPtr = make(map[string]*SubNode4)
+		n.MapStringPtr["B"]=&SubNode4{}
 		n.MapStringPtr["B"].String = "str"
 		result[i] = n
+	}
+	return result
+}
+
+func createSubNodes1(loc int) []*SubNode1 {
+	result:=make([]*SubNode1,3)
+	for i:=0;i<3;i++ {
+		result[i] = &SubNode1{}
+		result[i].String = "SubNode1-"+strconv.Itoa(i)+"-"+strconv.Itoa(loc)
 	}
 	return result
 }
@@ -95,12 +114,15 @@ func InitTestModel(size int) []*Node {
 		n.SliceInt[3] = 104
 		n.SliceString = make([]string,7)
 		n.SliceString[3]="303"
-		n.MapStringPtr = make(map[string]*Node)
+		n.MapStringPtr = make(map[string]*SubNode4)
 		for _,child:=range n.SliceOfPtr {
-			n.MapStringPtr[child.String]=child
+			n.MapStringPtr[child.String]=&SubNode4{}
 		}
 		n.MapIntString=make(map[int]string)
 		n.MapIntString[3] = "3"
+
+		n.SubNode1Slice = createSubNodes1(i)
+
 		result[i] = n
 	}
 	return result

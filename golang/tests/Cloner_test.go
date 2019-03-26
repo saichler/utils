@@ -2,10 +2,10 @@ package tests
 
 import (
 	"fmt"
+	. "github.com/saichler/utils/golang/orm/cloner"
 	"strconv"
 	"testing"
 )
-import . "github.com/saichler/utils/golang"
 
 func TestCloner(t *testing.T) {
 	nodes:=InitTestModel(1)
