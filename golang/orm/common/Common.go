@@ -5,7 +5,7 @@ import "strings"
 const (
 	TITLE = "Title"
 	SIZE = "Size"
-	MASK = "MASK"
+	MASK = "Mask"
 	IGNORE = "Ignore"
 	PRIMARY_KEY = "PrimaryKey"
 	UNIQUE_KEY = "UniqueKey"

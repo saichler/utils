@@ -3,7 +3,7 @@ package tests
 import "strconv"
 
 type Node struct {
-	String string
+	String string `Title=Hello Size=5 Ignore=true Mask=true`
 	Int  int
 	Int32  int32
 	Bool  bool

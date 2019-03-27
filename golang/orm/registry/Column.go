@@ -1,8 +1,8 @@
 package registry
 
 import (
-	. "github.com/saichler/utils/golang/orm/common"
 	. "github.com/saichler/utils/golang"
+	. "github.com/saichler/utils/golang/orm/common"
 	"reflect"
 	"strconv"
 	"strings"
@@ -11,26 +11,20 @@ import (
 type Column struct {
 	table *Table
 	field reflect.StructField
+	metaData *ColumnMetaData
+}
 
-	title string
-	size int
-	ignore bool
-	mask bool
-	primaryKey string
-	uniqueKey[] string
-	nonUniqueKey[] string
+func (c *Column)MetaData() *ColumnMetaData {
+	return c.metaData
 }
 
 func (c *Column) inspect() {
-	c.parseTags()
-	if c.IsStruct() {
+	c.parseMetaData()
+	if isStruct(c.field.Type) {
+		c.metaData.isTable = true
 		strct:=getStruct(c.field.Type)
 		c.table.ormRegistry.register(strct)
 	}
-}
-
-func (c *Column) IsStruct() bool {
-	return isStruct(c.field.Type)
 }
 
 func isStruct(typ reflect.Type) bool {
@@ -59,53 +53,50 @@ func getStruct(typ reflect.Type) reflect.Type {
 	return nil
 }
 
-func (c *Column) parseTags() {
+func (c *Column) parseMetaData() {
+	if c.metaData==nil {
+		c.metaData = &ColumnMetaData{}
+	}
+	c.metaData.title = c.field.Name
+	c.metaData.size = 128
 	tags:=string(c.field.Tag)
 	if tags=="" {
 		return
 	}
 	splits:=strings.Split(tags, " ")
 	for _,tag:=range splits {
-		c.parseTag(tag)
+		c.getTag(tag)
 	}
 }
 
-func (c *Column) parseTag(tag string) {
-	c.title = c.field.Name
-	c.size = 128
-	if strings.Trim(tag, " ") != "" {
+func (c *Column) getTag(tag string) {
+	if strings.Trim(tag, " ") == "" {
 		return
 	}
-	index := strings.Index(tag, ":")
+	index := strings.Index(tag, "=")
 	if index == -1 {
 		return
 	}
 	name := tag[0:index]
-	value := tag[index+1 : len(tag)-1]
+	value := tag[index+1:]
 	if name == TITLE {
-		c.title = value
+		c.metaData.title = value
 	} else if name == SIZE {
 		val,err:=strconv.Atoi(value)
 		if err!=nil {
 			Error("Unable to parse field size from:"+value+" in field:"+c.field.Name)
 		} else {
-			c.size = val
+			c.metaData.size = val
 		}
 	} else if name == MASK {
-		c.mask = true
+		c.metaData.mask = true
 	} else if name == IGNORE {
-		c.ignore = true
+		c.metaData.ignore = true
 	} else if name == PRIMARY_KEY {
-		c.primaryKey = value
+		c.metaData.primaryKey = value
 	} else if name == UNIQUE_KEY {
-		if c.uniqueKey==nil {
-			c.uniqueKey = make([]string,0)
-		}
-		c.uniqueKey = append(c.uniqueKey,value)
+		c.metaData.uniqueKeys = value
 	} else if name == NON_UNIQUE_KEY {
-		if c.nonUniqueKey==nil {
-			c.nonUniqueKey = make([]string,0)
-		}
-		c.nonUniqueKey = append(c.nonUniqueKey,value)
+		c.metaData.nonUniqueKeys = value
 	}
 }
