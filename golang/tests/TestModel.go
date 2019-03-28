@@ -3,7 +3,13 @@ package tests
 import "strconv"
 
 type Node struct {
-	String string `Title=Hello Size=5 Ignore=true Mask=true`
+	String string `Title=Hello Size=5 PrimaryKey=name:0`
+	String2 string `Ignore=true`
+	String3 string `Mask=true`
+	String4 string `UniqueKey=uk1:1`
+	String5 string `UniqueKey=uk2:0`
+	String6 string `NonUniqueKey=nuk:0`
+	IntKey int `UniqueKey=uk1:0`
 	Int  int
 	Int32  int32
 	Bool  bool

@@ -6,11 +6,15 @@ type Table struct {
 	ormRegistry *OrmRegistry
 	structType reflect.Type
 	columns map[string]*Column
+	indexes *Indexes
 }
 
 func (t *Table) inspect() {
 	if t.columns==nil {
 		t.columns = make(map[string]*Column)
+	}
+	if t.indexes==nil {
+		t.indexes = &Indexes{}
 	}
 	for i:=0;i<t.structType.NumField();i++ {
 		field:=t.structType.Field(i)
@@ -21,10 +25,15 @@ func (t *Table) inspect() {
 			c.table = t
 			t.columns[field.Name]=c
 			c.inspect()
+			t.indexes.AddColumn(c)
 		}
 	}
 }
 
 func (t *Table) Columns() map[string]*Column {
 	return t.columns
+}
+
+func (t *Table) Indexes() *Indexes {
+	return t.indexes
 }

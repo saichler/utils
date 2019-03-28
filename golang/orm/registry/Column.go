@@ -27,6 +27,10 @@ func (c *Column) inspect() {
 	}
 }
 
+func (c *Column) Name() string {
+	return c.field.Name
+}
+
 func isStruct(typ reflect.Type) bool {
 	if typ.Kind()==reflect.Struct {
 		return true

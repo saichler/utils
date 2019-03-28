@@ -7,42 +7,68 @@ import (
 )
 
 type Indexes struct {
-	indexes map[string]*Index
-	primaryIndex string
+	primaryIndex *Index
+	uniqueIndexes map[string]*Index
+	nonUniqueIndexes map[string]*Index
 }
 
 type Index struct {
 	name string
 	columns []*Column
+	unique bool
 }
 
 func (indexes *Indexes) AddColumn(column *Column) {
-	primaryName:=indexes.updateIndex(column.metaData.primaryKey,column)
-	if primaryName!="" {
-		indexes.primaryIndex = primaryName
-	}
-	indexes.updateIndex(column.metaData.uniqueKeys,column)
-	indexes.updateIndex(column.metaData.nonUniqueKeys,column)
+	indexes.updateIndex(column.metaData.primaryKey,column,true,true)
+	indexes.updateIndex(column.metaData.uniqueKeys,column,false,true)
+	indexes.updateIndex(column.metaData.nonUniqueKeys,column,false,false)
 }
 
-func (indexes *Indexes) updateIndex(data string,column *Column) string {
-	indexName:=""
+func newIndex(name string, unique bool)*Index {
+	index := &Index{}
+	index.unique = unique
+	index.name = name
+	index.columns = make([]*Column,0)
+	return index
+}
+
+func (indexes *Indexes) updateIndex(data string,column *Column,primary,unique bool) {
 	if data!="" {
 		im:=getIndexMap(data)
-		for k,v:=range im {
-			indexName = k
-			indexes.primaryIndex = k
-			index := indexes.indexes[k]
-			if index==nil {
-				index = &Index{}
-				index.name = k
-				index.columns = make([]*Column,0)
-				indexes.indexes[k]=index
+		for indexName, columnPos :=range im {
+			var index *Index
+			if primary {
+				if indexes.primaryIndex==nil {
+					indexes.primaryIndex=newIndex(indexName,true)
+				}
+				index = indexes.primaryIndex
+			} else if unique {
+				if indexes.uniqueIndexes==nil {
+					indexes.uniqueIndexes = make(map[string]*Index)
+				}
+				index = indexes.uniqueIndexes[indexName]
+				if index==nil {
+					index = newIndex(indexName, true)
+					indexes.uniqueIndexes[indexName]=index
+				}
+			} else {
+				if indexes.nonUniqueIndexes==nil {
+					indexes.nonUniqueIndexes = make(map[string]*Index)
+				}
+				index = indexes.nonUniqueIndexes[indexName]
+				if index == nil {
+					index = newIndex(indexName, false)
+					indexes.nonUniqueIndexes[indexName] = index
+				}
 			}
-			index.columns[v]=column
+			if len(index.columns)<= columnPos {
+				for i:=len(index.columns);i<= columnPos;i++{
+					index.columns = append(index.columns,nil)
+				}
+			}
+			index.columns[columnPos]=column
 		}
 	}
-	return indexName
 }
 
 func getIndexMap(indexStr string) map[string]int {
@@ -64,4 +90,18 @@ func getIndexMap(indexStr string) map[string]int {
 	return result
 }
 
+func (indxs *Indexes) PrimaryIndex() *Index {
+	return indxs.primaryIndex
+}
 
+func (indxs *Indexes) UniqueIndexes() map[string]*Index {
+	return indxs.uniqueIndexes
+}
+
+func (indxs *Indexes) NonUniqueIndexes() map[string]*Index {
+	return indxs.nonUniqueIndexes
+}
+
+func (index *Index) Columns() []*Column {
+	return index.columns
+}
