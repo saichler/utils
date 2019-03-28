@@ -13,8 +13,8 @@ const (
 var nextUntaggedIndex = 0
 
 func NewYamlRoot() *YamlNode {
-	root:=&YamlNode{}
-	root.Init("root","",-1)
+	root := &YamlNode{}
+	root.Init("root", "", -1)
 	return root
 }
 
@@ -25,43 +25,43 @@ func getNextUntagged() string {
 
 func removeQuotes(str string) string {
 	result := Trim(str)
-	if result[0:1]=="\"" || result[0:1]=="'" {
-		return result[1:len(result)-1]
+	if result[0:1] == "\"" || result[0:1] == "'" {
+		return result[1 : len(result)-1]
 	}
 	return result
 }
 
-func StartWith(str,start string) bool {
-	str=Trim(str)
-	if len(str)<len(start) {
+func StartWith(str, start string) bool {
+	str = Trim(str)
+	if len(str) < len(start) {
 		return false
 	}
-	if str[0:len(start)]==start {
+	if str[0:len(start)] == start {
 		return true
 	}
 	return false
 }
 
 func Trim(str string) string {
-	begin:=true
-	result:=""
-	subset:=""
-	for i:=0;i<len(str);i++ {
-		if begin && (str[i:i+1]==" " ||
-			str[i:i+1]=="\n" ||
-			str[i:i+1]=="\r" ||
-			str[i:i+1]=="\t") {
-				continue
-		} else if str[i:i+1]==" " ||
-			str[i:i+1]=="\n" ||
-			str[i:i+1]=="\r" ||
-			str[i:i+1]=="\t" {
-			subset+=str[i:i+1]
+	begin := true
+	result := ""
+	subset := ""
+	for i := 0; i < len(str); i++ {
+		if begin && (str[i:i+1] == " " ||
+			str[i:i+1] == "\n" ||
+			str[i:i+1] == "\r" ||
+			str[i:i+1] == "\t") {
+			continue
+		} else if str[i:i+1] == " " ||
+			str[i:i+1] == "\n" ||
+			str[i:i+1] == "\r" ||
+			str[i:i+1] == "\t" {
+			subset += str[i : i+1]
 			continue
 		}
-		result+=subset+str[i:i+1]
+		result += subset + str[i:i+1]
 		begin = false
-		subset=""
+		subset = ""
 	}
 	return result
 }
@@ -71,7 +71,7 @@ func parseTag(line string) string {
 	if "-" == line {
 		return "List-" + getNextUntagged()
 	}
-	index:=strings.Index(line,":")
+	index := strings.Index(line, ":")
 	if index == -1 {
 		return "Tag-" + getNextUntagged();
 	}
@@ -98,46 +98,46 @@ func parsetValue(line string) string {
 	if index2 == -1 {
 		return removeQuotes(line[index+1:])
 	}
-	return removeQuotes(line[index+1:index2])
+	return removeQuotes(line[index+1 : index2])
 }
 
 func parseLevel(line string) int {
 	index := 0
-	for ;line[index:index+1]==" "; {
+	for ; line[index:index+1] == " "; {
 		index++
 	}
 	if index == 0 {
 		return 0
 	}
 	result := index / len(TAB)
-	if index % len(TAB)!=0 {
+	if index%len(TAB) != 0 {
 		result++;
 	}
 	return result;
 }
 
 func getTab(lvl int) string {
-	result:=bytes.Buffer{}
+	result := bytes.Buffer{}
 	for i := 0; i < lvl; i++ {
 		result.WriteString(TAB)
 	}
 	return result.String()
 }
 
-func Parse(data,tag string, root *YamlNode) *YamlNode {
-	lr:=NewLineReader(data)
-	line:=lr.NextLine()
-	for; Trim(line)=="" || Trim(line)[0:1]=="#"; {
+func Parse(data, tag string, root *YamlNode) *YamlNode {
+	lr := NewLineReader(data)
+	line := lr.NextLine()
+	for ; Trim(line) == "" || Trim(line)[0:1] == "#"; {
 		line = lr.NextLine()
 	}
-	tagRoot:=&YamlNode{}
-	tagRoot.Init(tag,"",-1)
+	tagRoot := &YamlNode{}
+	tagRoot.Init(tag, "", -1)
 	root.AddChild(tagRoot)
-	parent:=tagRoot
-	for ;line!=EOF; {
-		node:= &YamlNode{}
+	parent := tagRoot
+	for ; line != EOF; {
+		node := &YamlNode{}
 		node.Parse(line)
-		if parent.lvl==node.lvl {
+		if parent.lvl == node.lvl {
 			parent = parent.parent
 		} else if parent.lvl > node.lvl {
 			for ; parent.lvl > node.lvl; {
@@ -149,12 +149,10 @@ func Parse(data,tag string, root *YamlNode) *YamlNode {
 		parent.AddChild(node)
 		parent = node
 		line = lr.NextLine()
-		for; Trim(line)=="" || Trim(line)[0:1]=="#"; {
+		for ; Trim(line) == "" || Trim(line)[0:1] == "#"; {
 			line = lr.NextLine()
 		}
 
 	}
 	return tagRoot
 }
-
-

@@ -4,19 +4,19 @@ import "sync"
 
 type List struct {
 	internalList []interface{}
-	lock *sync.Cond
+	lock         *sync.Cond
 }
 
 func NewList() *List {
-	l:=&List{}
-	l.internalList = make([]interface{},0)
+	l := &List{}
+	l.internalList = make([]interface{}, 0)
 	l.lock = sync.NewCond(&sync.Mutex{})
 	return l
 }
 
 func (l *List) Add(any interface{}) {
 	l.lock.L.Lock()
-	l.internalList = append(l.internalList,any)
+	l.internalList = append(l.internalList, any)
 	l.lock.L.Unlock()
 	l.lock.Broadcast()
 }

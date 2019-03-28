@@ -7,7 +7,7 @@ type StringBuilder struct {
 }
 
 func NewStringBuilder(str string) *StringBuilder {
-	sb:=&StringBuilder{}
+	sb := &StringBuilder{}
 	sb.buff = &bytes.Buffer{}
 	sb.buff.WriteString(str)
 	return sb
@@ -28,5 +28,5 @@ func (sb *StringBuilder) String() string {
 }
 
 func (sb *StringBuilder) Empty() bool {
-	return sb.buff.Len()==0
+	return sb.buff.Len() == 0
 }

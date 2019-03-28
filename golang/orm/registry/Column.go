@@ -9,12 +9,12 @@ import (
 )
 
 type Column struct {
-	table *Table
-	field reflect.StructField
+	table    *Table
+	field    reflect.StructField
 	metaData *ColumnMetaData
 }
 
-func (c *Column)MetaData() *ColumnMetaData {
+func (c *Column) MetaData() *ColumnMetaData {
 	return c.metaData
 }
 
@@ -22,7 +22,7 @@ func (c *Column) inspect() {
 	c.parseMetaData()
 	if isStruct(c.field.Type) {
 		c.metaData.isTable = true
-		strct:=getStruct(c.field.Type)
+		strct := getStruct(c.field.Type)
 		c.table.ormRegistry.register(strct)
 	}
 }
@@ -32,43 +32,43 @@ func (c *Column) Name() string {
 }
 
 func isStruct(typ reflect.Type) bool {
-	if typ.Kind()==reflect.Struct {
+	if typ.Kind() == reflect.Struct {
 		return true
-	} else if typ.Kind()==reflect.Ptr {
+	} else if typ.Kind() == reflect.Ptr {
 		return isStruct(typ.Elem())
-	} else if typ.Kind()==reflect.Slice {
+	} else if typ.Kind() == reflect.Slice {
 		return isStruct(typ.Elem())
-	} else if typ.Kind()==reflect.Map {
+	} else if typ.Kind() == reflect.Map {
 		return isStruct(typ.Elem())
 	}
 	return false
 }
 
 func getStruct(typ reflect.Type) reflect.Type {
-	if typ.Kind()==reflect.Struct {
+	if typ.Kind() == reflect.Struct {
 		return typ
-	} else if typ.Kind()==reflect.Ptr {
+	} else if typ.Kind() == reflect.Ptr {
 		return getStruct(typ.Elem())
-	} else if typ.Kind()==reflect.Slice {
+	} else if typ.Kind() == reflect.Slice {
 		return getStruct(typ.Elem())
-	} else if typ.Kind()==reflect.Map {
+	} else if typ.Kind() == reflect.Map {
 		return getStruct(typ.Elem())
 	}
 	return nil
 }
 
 func (c *Column) parseMetaData() {
-	if c.metaData==nil {
+	if c.metaData == nil {
 		c.metaData = &ColumnMetaData{}
 	}
 	c.metaData.title = c.field.Name
 	c.metaData.size = 128
-	tags:=string(c.field.Tag)
-	if tags=="" {
+	tags := string(c.field.Tag)
+	if tags == "" {
 		return
 	}
-	splits:=strings.Split(tags, " ")
-	for _,tag:=range splits {
+	splits := strings.Split(tags, " ")
+	for _, tag := range splits {
 		c.getTag(tag)
 	}
 }
@@ -86,9 +86,9 @@ func (c *Column) getTag(tag string) {
 	if name == TITLE {
 		c.metaData.title = value
 	} else if name == SIZE {
-		val,err:=strconv.Atoi(value)
-		if err!=nil {
-			Error("Unable to parse field size from:"+value+" in field:"+c.field.Name)
+		val, err := strconv.Atoi(value)
+		if err != nil {
+			Error("Unable to parse field size from:" + value + " in field:" + c.field.Name)
 		} else {
 			c.metaData.size = val
 		}

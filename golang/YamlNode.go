@@ -3,16 +3,16 @@ package utils
 import "bytes"
 
 type YamlNode struct {
-	tag string
-	value string
-	lvl int
-	childrenMap map[string]*YamlNode
+	tag          string
+	value        string
+	lvl          int
+	childrenMap  map[string]*YamlNode
 	childrenList []*YamlNode
-	parent *YamlNode
+	parent       *YamlNode
 }
 
 func (yn *YamlNode) Parse(line string) {
-	yn.Init(parseTag(line),parsetValue(line),parseLevel(line))
+	yn.Init(parseTag(line), parsetValue(line), parseLevel(line))
 }
 
 func (yn *YamlNode) Init(tag, value string, lvl int) {
@@ -38,7 +38,7 @@ func (yn *YamlNode) GetParent() *YamlNode {
 }
 
 func (yn *YamlNode) GetChildByTag(tag string) *YamlNode {
-	if yn.childrenMap==nil {
+	if yn.childrenMap == nil {
 		return nil
 	}
 	return yn.childrenMap[tag]
@@ -49,7 +49,7 @@ func (yn *YamlNode) GetChildrenList() []*YamlNode {
 }
 
 func (yn *YamlNode) GetKey() string {
-	buff:=&bytes.Buffer{}
+	buff := &bytes.Buffer{}
 	yn.getKey(buff)
 	return buff.String()
 }
@@ -66,31 +66,31 @@ func (yn *YamlNode) getKey(buff *bytes.Buffer) {
 }
 
 func (yn *YamlNode) AddChild(node *YamlNode) {
-	if yn.childrenList==nil {
-		yn.childrenList = make([]*YamlNode,0)
+	if yn.childrenList == nil {
+		yn.childrenList = make([]*YamlNode, 0)
 		yn.childrenMap = make(map[string]*YamlNode)
 	}
-	yn.childrenMap[node.tag]=node
-	yn.childrenList = append(yn.childrenList,node)
+	yn.childrenMap[node.tag] = node
+	yn.childrenList = append(yn.childrenList, node)
 	node.parent = yn
 }
 
 func (yn *YamlNode) String() string {
-	buff:=&bytes.Buffer{}
+	buff := &bytes.Buffer{}
 	yn.string(buff)
 	return buff.String()
 }
 
 func (yn *YamlNode) string(buff *bytes.Buffer) {
-	if yn.lvl>=0 {
+	if yn.lvl >= 0 {
 		buff.WriteString(getTab(yn.lvl))
 		buff.WriteString(yn.tag)
 		buff.WriteString(": ")
 		buff.WriteString(yn.value)
 		buff.WriteString("\n")
 	}
-	if yn.childrenList!=nil {
-		for _,c:=range yn.childrenList {
+	if yn.childrenList != nil {
+		for _, c := range yn.childrenList {
 			c.string(buff)
 		}
 	}

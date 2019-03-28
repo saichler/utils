@@ -10,16 +10,16 @@ func Fatal(any ...interface{}) {
 }
 
 func Error(any ...interface{}) error {
-	log.Error("******* ",any)
+	log.Error("******* ", any)
 	return errors.New("*****")
 }
 
 func Warn(any ...interface{}) {
-	log.Warn("***** ",any)
+	log.Warn("***** ", any)
 }
 
 func Info(any ...interface{}) {
-	log.Info("*** ",any)
+	log.Info("*** ", any)
 }
 
 func Debug(any ...interface{}) {
