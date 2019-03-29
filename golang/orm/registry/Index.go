@@ -13,6 +13,7 @@ type Indexes struct {
 }
 
 type Index struct {
+	table   *Table
 	name    string
 	columns []*Column
 	unique  bool
@@ -24,11 +25,12 @@ func (indexes *Indexes) AddColumn(column *Column) {
 	indexes.updateIndex(column.metaData.nonUniqueKeys, column, false, false)
 }
 
-func newIndex(name string, unique bool) *Index {
+func newIndex(name string, unique bool, table *Table) *Index {
 	index := &Index{}
 	index.unique = unique
 	index.name = name
 	index.columns = make([]*Column, 0)
+	index.table = table
 	return index
 }
 
@@ -39,7 +41,7 @@ func (indexes *Indexes) updateIndex(data string, column *Column, primary, unique
 			var index *Index
 			if primary {
 				if indexes.primaryIndex == nil {
-					indexes.primaryIndex = newIndex(indexName, true)
+					indexes.primaryIndex = newIndex(indexName, true,column.table)
 				}
 				index = indexes.primaryIndex
 			} else if unique {
@@ -48,7 +50,7 @@ func (indexes *Indexes) updateIndex(data string, column *Column, primary, unique
 				}
 				index = indexes.uniqueIndexes[indexName]
 				if index == nil {
-					index = newIndex(indexName, true)
+					index = newIndex(indexName, true,column.table)
 					indexes.uniqueIndexes[indexName] = index
 				}
 			} else {
@@ -57,7 +59,7 @@ func (indexes *Indexes) updateIndex(data string, column *Column, primary, unique
 				}
 				index = indexes.nonUniqueIndexes[indexName]
 				if index == nil {
-					index = newIndex(indexName, false)
+					index = newIndex(indexName, false,column.table)
 					indexes.nonUniqueIndexes[indexName] = index
 				}
 			}
@@ -104,4 +106,8 @@ func (indxs *Indexes) NonUniqueIndexes() map[string]*Index {
 
 func (index *Index) Columns() []*Column {
 	return index.columns
+}
+
+func (index *Index) Table() *Table {
+	return index.table
 }

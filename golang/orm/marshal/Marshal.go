@@ -7,7 +7,7 @@ import (
 	"reflect"
 )
 
-var marshalers = make(map[reflect.Kind]func(reflect.Value,*OrmRegistry,*Transaction,Persistency)(reflect.Value,error))
+var marshalers = make(map[reflect.Kind]func(reflect.Value,*OrmRegistry,*Transaction,Persistency,*KeyPath)(reflect.Value,error))
 func initMarshalers() {
 	if len(marshalers)==0 {
 		marshalers[reflect.Ptr]=ptrMarshal
@@ -33,27 +33,27 @@ func Marshal(any interface{},r *OrmRegistry,tx *Transaction, pr Persistency) err
 		return nil
 	}
 	value:=reflect.ValueOf(any)
-	value,err:=marshal(value,r,tx,pr)
+	value,err:=marshal(value,r,tx,pr,newKeyPath())
 	return err
 }
 
-func marshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency) (reflect.Value,error) {
+func marshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {
 	marshaler:=marshalers[value.Kind()]
 	if marshaler==nil {
 		panic("No Marshaler for kind "+value.Kind().String())
 	}
-	return marshaler(value,r,tx,pr)
+	return marshaler(value,r,tx,pr,kp)
 }
 
-func ptrMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency) (reflect.Value,error) {
+func ptrMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {
 	if value.IsNil() {
 		return value,nil
 	}
 	v:=value.Elem()
-	return marshal(v,r,tx,pr)
+	return marshal(v,r,tx,pr,kp)
 }
 
-func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persistency) (reflect.Value,error) {
+func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {
 	tableName:=value.Type().Name()
 	//No need to do anything, nameless struct
 	if tableName=="" {
@@ -66,28 +66,47 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 	}
 
 	rec:=tx.AddRecord(tableName)
+	subTables:=make([]*Column,0)
 	for fieldName,column:=range table.Columns() {
-		fieldValue:=value.FieldByName(fieldName)
-		marshalValue,err:=marshal(fieldValue,r,tx,pr)
-		if err!=nil {
-			panic(err)
-		}
 		if column.MetaData().ColumnTableName()=="" {
+			fieldValue:=value.FieldByName(fieldName)
+			marshalValue,err:=marshal(fieldValue,r,tx,pr,kp)
+			if err!=nil {
+				panic(err)
+			}
 			rec.Set(fieldName,marshalValue)
 		} else {
-			Process sub table marshaling here
+			subTables = append(subTables,column)
 		}
 	}
+
+	if table.Indexes().PrimaryIndex()!=nil {
+		kp.add(rec.PrimaryIndex(table.Indexes().PrimaryIndex()))
+
+		for _,sbColumn:=range subTables {
+			fieldValue:=value.FieldByName(sbColumn.Name())
+			sbValue,err:=marshal(fieldValue,r,tx,pr,kp)
+			if err!=nil {
+				return reflect.ValueOf(rec),err
+			}
+			sbTable:=r.Table(sbColumn.MetaData().ColumnTableName())
+			if sbTable.Indexes().PrimaryIndex()!=nil{
+				rec.Set(sbColumn.Name(),reflect.ValueOf(StringValue(sbValue)))
+			}
+		}
+		kp.del()
+	}
+
 	return reflect.ValueOf(rec),nil
 }
 
-func sliceMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency) (reflect.Value,error) {
+func sliceMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {
 	if value.IsNil() {
 		return value,nil
 	}
 	list:=make([]reflect.Value,value.Len())
 	for i:=0;i<value.Len();i++ {
-		v,e:=marshal(value.Index(i),r,tx,pr)
+		v,e:=marshal(value.Index(i),r,tx,pr,kp)
 		if e!=nil {
 			return v,e
 		}
@@ -96,10 +115,10 @@ func sliceMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persist
 	return reflect.ValueOf(list),nil
 }
 
-func mapMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency) (reflect.Value,error) {
+func mapMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {
 	return value,nil
 }
 
-func defaultMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency) (reflect.Value,error) {
+func defaultMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {
 	return value,nil
 }

@@ -30,6 +30,8 @@ type Node struct {
 	MapIntString map[int]string
 	SubNode1Slice []*SubNode1
 	SubNode2Slice []*SubNode2
+	SlicePrimary []*SubNode5
+	MapPrimary map[string]*SubNode6
 }
 
 type SubNode1 struct {
@@ -65,6 +67,26 @@ type SubNode3 struct {
 
 type SubNode4 struct {
 	String string
+	IntSlice []int
+	IntSliceNil []int
+	StringSlice []string
+	MapOfPtr map[string]*Node
+	MaoOfPtrNil map[string]*Node
+	MapIntToStr map[int]string
+}
+
+type SubNode5 struct {
+	String string `PrimaryKey=name:0`
+	IntSlice []int
+	IntSliceNil []int
+	StringSlice []string
+	MapOfPtr map[string]*Node
+	MaoOfPtrNil map[string]*Node
+	MapIntToStr map[int]string
+}
+
+type SubNode6 struct {
+	String string `PrimaryKey=name:0`
 	IntSlice []int
 	IntSliceNil []int
 	StringSlice []string

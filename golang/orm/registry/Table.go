@@ -37,3 +37,7 @@ func (t *Table) Columns() map[string]*Column {
 func (t *Table) Indexes() *Indexes {
 	return t.indexes
 }
+
+func (t *Table) Name() string {
+	return t.structType.Name()
+}

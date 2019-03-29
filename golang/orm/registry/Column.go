@@ -31,6 +31,10 @@ func (c *Column) Name() string {
 	return c.field.Name
 }
 
+func (c *Column) Table() *Table {
+	return c.table
+}
+
 func isStruct(typ reflect.Type) bool {
 	if typ.Kind() == reflect.Struct {
 		return true
