@@ -8,7 +8,7 @@ type ColumnMetaData struct {
 	primaryKey string
 	uniqueKeys string
 	nonUniqueKeys string
-	isTable bool
+	columnTableName string
 }
 
 func (cm *ColumnMetaData) Title() string {
@@ -25,4 +25,8 @@ func (cm *ColumnMetaData) Ignore() bool {
 
 func (cm *ColumnMetaData) Mask() bool {
 	return cm.mask
+}
+
+func (cm *ColumnMetaData) ColumnTableName() string {
+	return cm.columnTableName
 }

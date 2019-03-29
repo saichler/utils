@@ -21,8 +21,8 @@ func (c *Column) MetaData() *ColumnMetaData {
 func (c *Column) inspect() {
 	c.parseMetaData()
 	if isStruct(c.field.Type) {
-		c.metaData.isTable = true
 		strct := getStruct(c.field.Type)
+		c.metaData.columnTableName = strct.Name()
 		c.table.ormRegistry.register(strct)
 	}
 }
