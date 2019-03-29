@@ -1,10 +1,9 @@
 package transaction
 
 import (
-	"bytes"
+	"github.com/saichler/utils/golang"
 	. "github.com/saichler/utils/golang/orm/registry"
 	"reflect"
-	"strconv"
 )
 
 type Record struct {
@@ -19,27 +18,15 @@ func (rec *Record) Set(key string,value reflect.Value) {
 }
 
 func (rec *Record) PrimaryIndex(pi *Index) string {
-	buff:=bytes.Buffer{}
-	buff.WriteString("[")
-	buff.WriteString(pi.Table().Name())
+	result:=utils.NewStringBuilder("")
 	for _,column:=range pi.Columns() {
-		buff.WriteString(".")
 		val:=rec.recordData[column.Name()]
-		sv:=StringValue(val)
-		buff.WriteString(column.Name())
-		buff.WriteString("=")
-		buff.WriteString(sv)
+		sv:=utils.ToString(val)
+		result.Append(sv)
 	}
-	buff.WriteString("]")
-	return buff.String()
+	return result.String()
 }
 
-func StringValue(v reflect.Value) string {
-	if v.Kind()==reflect.String {
-		return v.String()
-	} else if v.Kind()==reflect.Int || v.Kind()==reflect.Int16 || v.Kind()==reflect.Int32 || v.Kind()==reflect.Int64 {
-		return strconv.Itoa(int(v.Int()))
-	} else {
-		panic("Please implemenet String Value for kind:"+v.Kind().String())
-	}
+func (r *Record) Map() map[string]reflect.Value {
+	return r.recordData
 }

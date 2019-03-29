@@ -1,6 +1,7 @@
 package marshal
 
 import (
+	"github.com/saichler/utils/golang"
 	. "github.com/saichler/utils/golang/orm/common"
 	. "github.com/saichler/utils/golang/orm/registry"
 	. "github.com/saichler/utils/golang/orm/transaction"
@@ -80,9 +81,11 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 		}
 	}
 
-	if table.Indexes().PrimaryIndex()!=nil {
-		kp.add(rec.PrimaryIndex(table.Indexes().PrimaryIndex()))
+	key:=""
 
+	if table.Indexes().PrimaryIndex()!=nil {
+		key = rec.PrimaryIndex(table.Indexes().PrimaryIndex())
+		kp.add(key)
 		for _,sbColumn:=range subTables {
 			fieldValue:=value.FieldByName(sbColumn.Name())
 			sbValue,err:=marshal(fieldValue,r,tx,pr,kp)
@@ -91,32 +94,45 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 			}
 			sbTable:=r.Table(sbColumn.MetaData().ColumnTableName())
 			if sbTable.Indexes().PrimaryIndex()!=nil{
-				rec.Set(sbColumn.Name(),reflect.ValueOf(StringValue(sbValue)))
+				rec.Set(sbColumn.Name(),reflect.ValueOf(utils.ToString(sbValue)))
 			}
 		}
 		kp.del()
 	}
 
-	return reflect.ValueOf(rec),nil
+	return reflect.ValueOf(key),nil
 }
 
 func sliceMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {
 	if value.IsNil() {
 		return value,nil
 	}
-	list:=make([]reflect.Value,value.Len())
+	list:=make([]interface{},0)
 	for i:=0;i<value.Len();i++ {
 		v,e:=marshal(value.Index(i),r,tx,pr,kp)
 		if e!=nil {
-			return v,e
+			panic("Unable To marshal!")
 		}
-		list = append(list,v)
+		list = append(list,v.Interface())
 	}
 	return reflect.ValueOf(list),nil
 }
 
 func mapMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {
-	return value,nil
+	if value.IsNil() {
+		return value,nil
+	}
+	m:=make(map[interface{}]interface{})
+	mapKeys:=value.MapKeys()
+	for _,key:=range mapKeys {
+		mv:=value.MapIndex(key)
+		v,e:=marshal(mv,r,tx,pr,kp)
+		if e!=nil {
+			panic("Unable To marshal!")
+		}
+		m[key.Interface()]=v.Interface()
+	}
+	return reflect.ValueOf(m),nil
 }
 
 func defaultMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,kp *KeyPath) (reflect.Value,error) {

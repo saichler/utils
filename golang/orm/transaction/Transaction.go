@@ -15,3 +15,7 @@ func (tx *Transaction) AddRecord(tableName string) *Record {
 	tx.tableData[tableName] = append(tx.tableData[tableName],record)
 	return record
 }
+
+func (tx *Transaction) Records() map[string][]*Record {
+	return tx.tableData
+}
