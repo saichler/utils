@@ -21,6 +21,7 @@ type Node struct {
 	Float64 float64
 	Ptr *Node
 	NilPtr *Node
+	PtrNoKey *SubNode1
 	SliceOfPtr []*Node
 	NilSliceOfPtr []*Node
 	SliceInt []int
@@ -126,17 +127,19 @@ func InitTestModel(size int) []*Node {
 	for i:=0;i<size;i++ {
 		n:=&Node{}
 		n.String = "String-"+strconv.Itoa(i)
-		n.Int = -101
-		n.Int32 = -102
+		n.Int = -101+i
+		n.Int32 = -102+int32(i)
 		n.Bool = true
-		n.Int64 = -103
-		n.Uint = 104
+		n.Int64 = -103+int64(i)
+		n.Uint = 104+uint(i)
 		n.Uint32 = 105
 		n.Uint64 = 106
 		n.Float32 = -107.23
 		n.Float64 = -108.25
 		n.Ptr = &Node{}
 		n.Ptr.String = "OnlyChild-"+n.String
+		n.PtrNoKey = &SubNode1{}
+		n.PtrNoKey.String = "NoKey-"+n.String
 		n.SliceOfPtr = createSubChild(i)
 		n.SliceInt = make([]int,5)
 		n.SliceInt[3] = 104
