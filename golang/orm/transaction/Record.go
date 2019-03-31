@@ -10,10 +10,14 @@ type Record struct {
 	recordData map[string]reflect.Value
 }
 
-func (rec *Record) Set(key string,value reflect.Value) {
+func (rec *Record) init(){
 	if rec.recordData==nil {
 		rec.recordData = make(map[string]reflect.Value)
 	}
+}
+
+func (rec *Record) Set(key string,value reflect.Value) {
+	rec.init()
 	rec.recordData[key]=value
 }
 
@@ -27,6 +31,7 @@ func (rec *Record) PrimaryIndex(pi *Index) string {
 	return result.String()
 }
 
-func (r *Record) Map() map[string]reflect.Value {
-	return r.recordData
+func (rec *Record) Map() map[string]reflect.Value {
+	rec.init()
+	return rec.recordData
 }

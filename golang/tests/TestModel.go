@@ -122,6 +122,25 @@ func createSubNodes1(loc int) []*SubNode1 {
 	return result
 }
 
+func createSubNodes2(loc int) []*SubNode2 {
+	result:=make([]*SubNode2,3)
+	for i:=0;i<3;i++ {
+		result[i] = &SubNode2{}
+		result[i].String = "SubNode2-"+strconv.Itoa(i)+"-"+strconv.Itoa(loc)
+		result[i].SliceInSlice = createSubNodes3(loc,i)
+	}
+	return result
+}
+
+func createSubNodes3(loc,loc2 int) []*SubNode3 {
+	result:=make([]*SubNode3,3)
+	for i:=0;i<3;i++ {
+		result[i] = &SubNode3{}
+		result[i].String = "SubNode3-"+strconv.Itoa(i)+"-"+strconv.Itoa(loc)+"-"+strconv.Itoa(loc2)
+	}
+	return result
+}
+
 func InitTestModel(size int) []*Node {
 	result:=make([]*Node,size)
 	for i:=0;i<size;i++ {
@@ -150,10 +169,11 @@ func InitTestModel(size int) []*Node {
 			n.MapStringPtr[child.String]=&SubNode4{}
 		}
 		n.MapIntString=make(map[int]string)
-		n.MapIntString[3] = "3"
+		n.MapIntString[3+i] = "3+"+strconv.Itoa(i)
+		n.MapIntString[4+i] = "4+"+strconv.Itoa(i)
 
 		n.SubNode1Slice = createSubNodes1(i)
-
+		n.SubNode2Slice = createSubNodes2(i)
 		result[i] = n
 	}
 	return result

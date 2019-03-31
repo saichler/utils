@@ -2,6 +2,7 @@ package tests
 
 import (
 	. "github.com/saichler/utils/golang"
+	. "github.com/saichler/utils/golang/orm/common"
 	. "github.com/saichler/utils/golang/orm/marshal"
 	. "github.com/saichler/utils/golang/orm/registry"
 	. "github.com/saichler/utils/golang/orm/transaction"
@@ -144,6 +145,73 @@ func TestMarshalPtrNoKey(t *testing.T) {
 		if val.IsValid() {
 			t.Fail()
 			Error("Expected not valid but got valid")
+		}
+	}
+}
+
+func TestMarshalSlicePtrWithKey(t *testing.T) {
+	tx:=initTest(size)
+	nodeRecords:=tx.Records()["Node"]
+	for i:=0;i<size;i++ {
+		rec := findNodeRecords(nodeRecords, i)
+		if rec == nil {
+			t.Fail()
+			Error("No Recrod was found with id:"+strconv.Itoa(i))
+		}
+		strI:=strconv.Itoa(i)
+		expected:="["+strI+"-Sub-Child-0,"+strI+"-Sub-Child-1,"+strI+"-Sub-Child-2,"+strI+"-Sub-Child-3]"
+		val:=rec.Map()["SliceOfPtr"].String()
+		if val!=expected {
+			t.Fail()
+			Error("Expected:"+expected+" got:"+val)
+		}
+	}
+}
+
+func TestMarshalMapIntString(t *testing.T) {
+	tx := initTest(size)
+	nodeRecords := tx.Records()["Node"]
+	for i:=0;i<size;i++ {
+		rec := findNodeRecords(nodeRecords, i)
+		if rec == nil {
+			t.Fail()
+			Error("No Recrod was found with id:" + strconv.Itoa(i))
+		}
+		s1:=strconv.Itoa(3+i)+"=3+"+strconv.Itoa(i)
+		s2:=strconv.Itoa(4+i)+"=4+"+strconv.Itoa(i)
+		expected1:="["+s1+","+s2+"]"
+		expected2:="["+s2+","+s1+"]"
+		val:=ToString(rec.Map()["MapIntString"])
+		if val!=expected1 && val!=expected2 {
+			t.Fail()
+			Error("Did not find "+expected1)
+		}
+	}
+}
+
+func TestMarshalKeyPath(t *testing.T) {
+	tx := initTest(size)
+	nodeRecords := tx.Records()["SubNode3"]
+	for i1:=0;i1<size;i1++ {
+		si1:=strconv.Itoa(i1)
+		for i2:=0;i2<3;i2++ {
+			si2:=strconv.Itoa(i2)
+			for i3:=0;i3<3;i3++ {
+				si3:=strconv.Itoa(i3)
+				expected:="[Node.SubNode2Slice=String-"+si1+"][SubNode2.SliceInSlice="+si2+"]"+si3
+				found:=false
+				for _,rec:=range nodeRecords {
+					val:=rec.Map()[RECORD_ID].String()
+					if val==expected {
+						found = true
+						break
+					}
+				}
+				if !found {
+					t.Fail()
+					Error("Did not find RecordID "+expected)
+				}
+			}
 		}
 	}
 }
