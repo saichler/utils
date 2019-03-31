@@ -41,3 +41,7 @@ func (t *Table) Indexes() *Indexes {
 func (t *Table) Name() string {
 	return t.structType.Name()
 }
+
+func (t *Table) NewInstance() reflect.Value {
+	return reflect.New(t.structType)
+}

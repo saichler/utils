@@ -8,6 +8,12 @@ import (
 	"reflect"
 )
 
+type Marshaler struct {
+	ormRegistry *OrmRegistry
+	persistency Persistency
+	tx *Transaction
+}
+
 var marshalers = make(map[reflect.Kind]func(reflect.Value,*OrmRegistry,*Transaction,Persistency,*RecordID)(reflect.Value,error))
 func initMarshalers() {
 	if len(marshalers)==0 {
@@ -28,22 +34,35 @@ func initMarshalers() {
 	}
 }
 
-func Marshal(any interface{},r *OrmRegistry,tx *Transaction, pr Persistency) error {
+func NewMarshaler(ormRegistry *OrmRegistry,persistency Persistency,tx ...*Transaction) *Marshaler {
+	initMarshalers()
+	m:=&Marshaler{}
+	m.ormRegistry = ormRegistry
+	m.persistency = persistency
+	if tx==nil {
+		m.tx = &Transaction{}
+	} else {
+		m.tx = tx[0]
+	}
+	return m
+}
+
+func (m *Marshaler) Marshal(any interface{}) error {
 	initMarshalers()
 	if any==nil {
 		return nil
 	}
 	value:=reflect.ValueOf(any)
-	value,err:=marshal(value,r,tx,pr,NewRecordID())
+	value,err:=marshal(value,m.ormRegistry,m.tx,m.persistency,NewRecordID())
 	return err
 }
 
 func marshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,rid *RecordID) (reflect.Value,error) {
-	marshaler:=marshalers[value.Kind()]
-	if marshaler==nil {
-		panic("No Marshaler for kind "+value.Kind().String())
+	marshalFunc:=marshalers[value.Kind()]
+	if marshalFunc==nil {
+		panic("No Marshal Function for kind "+value.Kind().String())
 	}
-	return marshaler(value,r,tx,pr,rid)
+	return marshalFunc(value,r,tx,pr,rid)
 }
 
 func ptrMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency, rid *RecordID) (reflect.Value,error) {

@@ -12,12 +12,19 @@ import (
 
 var size = 5;
 
-func initTest(numOfNodes int) *Transaction {
+
+func initMarshaler(numOfNodes int, tx *Transaction) *Marshaler {
 	registry := &OrmRegistry{}
 	registry.Register(Node{})
 	nodes:=InitTestModel(numOfNodes)
+	m:=NewMarshaler(registry,nil,tx)
+	m.Marshal(nodes)
+	return m
+}
+
+func initTest(numOfNodes int) *Transaction {
 	tx:=&Transaction{}
-	Marshal(nodes,registry,tx,nil)
+	initMarshaler(numOfNodes,tx)
 	return tx
 }
 
