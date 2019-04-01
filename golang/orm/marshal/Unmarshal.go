@@ -113,6 +113,8 @@ func setSlice(field reflect.Value,column *Column,record *Record,id *RecordID) {
 		if column.MetaData().ColumnTableName()=="" {
 			v:=utils.FromString(vString,column.Type())
 			field.Set(v)
+		} else {
+
 		}
 	}
 }

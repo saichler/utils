@@ -143,3 +143,31 @@ func TestUnMarshalStringSlice(t *testing.T) {
 		}
 	}
 }
+
+func TestUnMarshalPtrSliceNoKey(t *testing.T) {
+	tx:=&Transaction{}
+	m:=initMarshaler(size,tx)
+	q:=NewQuery("Node",true)
+	instances:=m.UnMarshal(q)
+	if len(instances)!=size {
+		t.Fail()
+		Error("Expected:"+strconv.Itoa(size)+" but got "+strconv.Itoa(len(instances)))
+	}
+	for i:=0;i<size;i++ {
+		found:=false
+		for _,n:=range instances {
+			node:=n.(*Node)
+			if node.SubNode1Slice==nil {
+				t.Fail()
+				Error("Expected ptr slice to exist")
+			} else if len(node.SubNode1Slice)!=3 {
+				t.Fail()
+				Error("Expected int slice of size 4 but got "+strconv.Itoa(len(node.SliceInt)))
+			}
+		}
+		if !found {
+			t.Fail()
+			Error("Failed to find string in slice ")
+		}
+	}
+}
