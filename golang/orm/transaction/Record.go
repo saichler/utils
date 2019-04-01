@@ -7,31 +7,41 @@ import (
 )
 
 type Record struct {
-	recordData map[string]reflect.Value
+	data map[string]reflect.Value
 }
 
 func (rec *Record) init(){
-	if rec.recordData==nil {
-		rec.recordData = make(map[string]reflect.Value)
+	if rec.data ==nil {
+		rec.data = make(map[string]reflect.Value)
 	}
 }
 
-func (rec *Record) Set(key string,value reflect.Value) {
+func (rec *Record) SetValue(key string,value reflect.Value) {
 	rec.init()
-	rec.recordData[key]=value
+	rec.data[key]=value
+}
+
+func (rec *Record) SetInterface(key string,any interface{}) {
+	rec.init()
+	rec.data[key]=reflect.ValueOf(any)
 }
 
 func (rec *Record) PrimaryIndex(pi *Index) string {
 	result:=utils.NewStringBuilder("")
 	for _,column:=range pi.Columns() {
-		val:=rec.recordData[column.Name()]
+		val:=rec.data[column.Name()]
 		sv:=utils.ToString(val)
 		result.Append(sv)
 	}
 	return result.String()
 }
 
-func (rec *Record) Map() map[string]reflect.Value {
+func (rec *Record) Data() map[string]reflect.Value {
 	rec.init()
-	return rec.recordData
+	return rec.data
+}
+
+func (rec *Record) Get(key string) reflect.Value {
+	rec.init()
+	return rec.data[key]
 }

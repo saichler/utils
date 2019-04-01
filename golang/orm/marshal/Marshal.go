@@ -86,8 +86,9 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 	}
 
 	rec:=tx.AddRecord(tableName)
+	rec.SetInterface(RECORD_LEVEL,rid.Level())
 	if table.Indexes().PrimaryIndex()==nil {
-		rec.Map()[RECORD_ID]=reflect.ValueOf(rid.String()+rid.Index())
+		rec.SetInterface(RECORD_ID,rid.String()+rid.Index())
 	}
 	subTables:=make([]*Column,0)
 	for fieldName,column:=range table.Columns() {
@@ -97,7 +98,7 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 			if err!=nil {
 				panic(err)
 			}
-			rec.Set(fieldName,marshalValue)
+			rec.SetValue(fieldName,marshalValue)
 		} else {
 			subTables = append(subTables,column)
 		}
@@ -120,7 +121,7 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 		}
 		sbTable:=r.Table(sbColumn.MetaData().ColumnTableName())
 		if sbTable.Indexes().PrimaryIndex()!=nil{
-			rec.Set(sbColumn.Name(),reflect.ValueOf(utils.ToString(sbValue)))
+			rec.SetInterface(sbColumn.Name(),utils.ToString(sbValue))
 		}
 		rid.Del()
 	}

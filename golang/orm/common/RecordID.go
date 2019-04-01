@@ -67,3 +67,7 @@ func (rid *RecordID) String() string {
 	}
 	return sb.String()
 }
+
+func (rid *RecordID) Level() int {
+	return len(rid.entries)
+}

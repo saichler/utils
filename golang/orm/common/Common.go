@@ -9,6 +9,7 @@ const (
 	UNIQUE_KEY     = "UniqueKey"
 	NON_UNIQUE_KEY = "NonUniqueKey"
 	RECORD_ID      = "_RID"
+	RECORD_LEVEL   = "_LVL"
 )
 
 type Persistency interface {

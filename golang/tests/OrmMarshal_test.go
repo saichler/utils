@@ -30,7 +30,7 @@ func initTest(numOfNodes int) *Transaction {
 
 func findNodeRecords(records []*Record, id int) *Record {
 	for _,nr:=range records {
-		if nr.Map()["String"].String()=="String-"+strconv.Itoa(id) {
+		if nr.Get("String").String()=="String-"+strconv.Itoa(id) {
 			return nr
 		}
 	}
@@ -59,7 +59,7 @@ func TestMarshalInt(t *testing.T) {
 			Error("No Recrod was found with id:"+strconv.Itoa(i))
 		}
 		expected:=int64(-101+i)
-		val:=rec.Map()["Int"].Int()
+		val:=rec.Get("Int").Int()
 		if val!= expected{
 			t.Fail()
 			Error("Expected "+strconv.Itoa(int(expected))+" but got:"+strconv.Itoa(int(val)))
@@ -77,7 +77,7 @@ func TestMarshalInt32(t *testing.T) {
 			Error("No Recrod was found with id:"+strconv.Itoa(i))
 		}
 		expected:=int64(-102+i)
-		val:=rec.Map()["Int32"].Int()
+		val:=rec.Get("Int32").Int()
 		if val!= expected{
 			t.Fail()
 			Error("Expected "+strconv.Itoa(int(expected))+" but got:"+strconv.Itoa(int(val)))
@@ -95,7 +95,7 @@ func TestMarshalInt64(t *testing.T) {
 			Error("No Recrod was found with id:"+strconv.Itoa(i))
 		}
 		expected:=int64(-103+i)
-		val:=rec.Map()["Int64"].Int()
+		val:=rec.Get("Int64").Int()
 		if val!= expected{
 			t.Fail()
 			Error("Expected "+strconv.Itoa(int(expected))+" but got:"+strconv.Itoa(int(val)))
@@ -113,7 +113,7 @@ func TestMarshalBool(t *testing.T) {
 			Error("No Recrod was found with id:"+strconv.Itoa(i))
 		}
 		expected:=true
-		val:=rec.Map()["Bool"].Bool()
+		val:=rec.Get("Bool").Bool()
 		if val!= expected{
 			t.Fail()
 			Error("Expected true but got false")
@@ -131,7 +131,7 @@ func TestMarshalPtrKey(t *testing.T) {
 			Error("No Recrod was found with id:"+strconv.Itoa(i))
 		}
 		expected:="OnlyChild-String-"+strconv.Itoa(i)
-		val:=rec.Map()["Ptr"].String()
+		val:=rec.Get("Ptr").String()
 		if val!=expected {
 			t.Fail()
 			Error("Expected:"+expected+" got:"+val)
@@ -148,7 +148,7 @@ func TestMarshalPtrNoKey(t *testing.T) {
 			t.Fail()
 			Error("No Recrod was found with id:"+strconv.Itoa(i))
 		}
-		val:=rec.Map()["PtrNoKey"]
+		val:=rec.Get("PtrNoKey")
 		if val.IsValid() {
 			t.Fail()
 			Error("Expected not valid but got valid")
@@ -167,7 +167,7 @@ func TestMarshalSlicePtrWithKey(t *testing.T) {
 		}
 		strI:=strconv.Itoa(i)
 		expected:="["+strI+"-Sub-Child-0,"+strI+"-Sub-Child-1,"+strI+"-Sub-Child-2,"+strI+"-Sub-Child-3]"
-		val:=rec.Map()["SliceOfPtr"].String()
+		val:=rec.Get("SliceOfPtr").String()
 		if val!=expected {
 			t.Fail()
 			Error("Expected:"+expected+" got:"+val)
@@ -188,7 +188,7 @@ func TestMarshalMapIntString(t *testing.T) {
 		s2:=strconv.Itoa(4+i)+"=4+"+strconv.Itoa(i)
 		expected1:="["+s1+","+s2+"]"
 		expected2:="["+s2+","+s1+"]"
-		val:=ToString(rec.Map()["MapIntString"])
+		val:=ToString(rec.Get("MapIntString"))
 		if val!=expected1 && val!=expected2 {
 			t.Fail()
 			Error("Did not find "+expected1)
@@ -208,7 +208,7 @@ func TestMarshalKeyPath(t *testing.T) {
 				expected:="[Node.SubNode2Slice=String-"+si1+"][SubNode2.SliceInSlice="+si2+"]"+si3
 				found:=false
 				for _,rec:=range nodeRecords {
-					val:=rec.Map()[RECORD_ID].String()
+					val:=rec.Get(RECORD_ID).String()
 					if val==expected {
 						found = true
 						break
