@@ -67,7 +67,7 @@ func marshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,
 
 func ptrMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency, rid *RecordID) (reflect.Value,error) {
 	if value.IsNil() {
-		return value,nil
+		return reflect.ValueOf(""),nil
 	}
 	v:=value.Elem()
 	return marshal(v,r,tx,pr, rid)
@@ -131,25 +131,29 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 
 func sliceMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,rid *RecordID) (reflect.Value,error) {
 	if value.IsNil() {
-		return value,nil
+		return reflect.ValueOf(""),nil
 	}
-	list:=make([]interface{},0)
+	sb:=utils.NewStringBuilder("[")
 	for i:=0;i<value.Len();i++ {
 		rid.SetIndex(i)
 		v,e:=marshal(value.Index(i),r,tx,pr,rid)
 		if e!=nil {
 			panic("Unable To marshal!")
 		}
-		list = append(list,v.Interface())
+		if i!=0 {
+			sb.Append(",")
+		}
+		sb.Append(utils.ToString(v))
 	}
-	return reflect.ValueOf(list),nil
+	sb.Append("]")
+	return reflect.ValueOf(sb.String()),nil
 }
 
 func mapMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,rid *RecordID) (reflect.Value,error) {
 	if value.IsNil() {
 		return value,nil
 	}
-	m:=make(map[interface{}]interface{})
+
 	mapKeys:=value.MapKeys()
 	for _,key:=range mapKeys {
 		mv:=value.MapIndex(key)

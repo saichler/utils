@@ -8,7 +8,7 @@ import (
 	"reflect"
 )
 
-var setters = make(map[reflect.Kind]func(instance reflect.Value,column *Column,record *Record))
+var setters = make(map[reflect.Kind]func(reflect.Value,*Column,*Record,*RecordID))
 
 func initSetters(){
 	if len(setters)==0 {
@@ -34,7 +34,7 @@ func initSetters(){
 
 func (m *Marshaler) UnMarshal(ormQuery *Query) []interface{} {
 	initSetters()
-	instances:=unmarshal(ormQuery.TableName(),m.tx,m.ormRegistry,ormQuery)
+	instances:=unmarshal(ormQuery,m.tx,m.ormRegistry,&RecordID{})
 	result:=make([]interface{},len(instances))
 	for i:=0;i<len(result);i++ {
 		result[i] = instances[i].Interface()
@@ -42,17 +42,17 @@ func (m *Marshaler) UnMarshal(ormQuery *Query) []interface{} {
 	return result
 }
 
-func unmarshal(tablename string, tx *Transaction,ormRegistry *OrmRegistry,ormQuery *Query) []reflect.Value {
-	table:=ormRegistry.Table(tablename)
+func unmarshal(query *Query, tx *Transaction,ormRegistry *OrmRegistry,id *RecordID) []reflect.Value {
+	table:=ormRegistry.Table(query.TableName())
 	if table==nil {
-		panic("Unknown table "+tablename)
+		panic("Unknown table "+query.TableName())
 	}
 	result:=make([]reflect.Value,0)
 
-	records:=tx.Records()[tablename]
+	records:=tx.Records()[query.TableName()]
 
 	for _,record:=range records {
-		if record.Get(RECORD_LEVEL).Int()==0 || !ormQuery.OnlyTopLevel() {
+		if record.Get(RECORD_LEVEL).Int()==0 || !query.OnlyTopLevel() {
 			instance := table.NewInstance()
 			result = append(result, instance)
 			for _, column := range table.Columns() {
@@ -62,22 +62,24 @@ func unmarshal(tablename string, tx *Transaction,ormRegistry *OrmRegistry,ormQue
 				} else {
 					field = instance.FieldByName(column.Name())
 				}
-				set(field, column, record)
+				id.Add(table.Name(),column.Name(),record.PrimaryIndex(table.Indexes().PrimaryIndex()))
+				set(field, column, record,id)
+				id.Del()
 			}
 		}
 	}
 	return result
 }
 
-func set(field reflect.Value,column *Column,record *Record) {
+func set(field reflect.Value,column *Column,record *Record,id *RecordID) {
 	setter:=setters[field.Kind()]
 	if setter==nil {
 		panic("No Setter for kind:"+field.Kind().String())
 	}
-	setter(field,column,record)
+	setter(field,column,record,id)
 }
 
-func setPtr(field reflect.Value,column *Column,record *Record) {
+func setPtr(field reflect.Value,column *Column,record *Record,id *RecordID) {
 	ptrKind:=field.Type().Elem().Kind()
 	if ptrKind==reflect.Struct {
 		newPtr := reflect.New(field.Type().Elem())
@@ -91,18 +93,22 @@ func setPtr(field reflect.Value,column *Column,record *Record) {
 	} else {
 		panic("No Ptr Handle of:"+ptrKind.String())
 	}
-	set(field.Elem(),column,record)
+	set(field.Elem(),column,record,id)
 }
 
-func setDefault(field reflect.Value,column *Column,record *Record) {
+func setDefault(field reflect.Value,column *Column,record *Record,id *RecordID) {
 	field.Set(record.Get(column.Name()))
 }
 
-func setStruct(field reflect.Value,column *Column,record *Record) {
+func setStruct(field reflect.Value,column *Column,record *Record,id *RecordID) {
 }
 
-func setMap(field reflect.Value,column *Column,record *Record) {
+func setMap(field reflect.Value,column *Column,record *Record,id *RecordID) {
 }
 
-func setSlice(field reflect.Value,column *Column,record *Record) {
+func setSlice(field reflect.Value,column *Column,record *Record,id *RecordID) {
+	stringValue:=record.Get(column.Name()).String()
+	if stringValue!="" {
+		fmt.Println(stringValue)
+	}
 }
