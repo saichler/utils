@@ -175,6 +175,23 @@ func TestMarshalSlicePtrWithKey(t *testing.T) {
 	}
 }
 
+func TestMarshalSlicePtrWithoutKey(t *testing.T) {
+	tx:=initTest(size)
+	nodeRecords:=tx.Records()["Node"]
+	for i:=0;i<size;i++ {
+		rec := findNodeRecords(nodeRecords, i)
+		if rec == nil {
+			t.Fail()
+			Error("No Recrod was found with id:"+strconv.Itoa(i))
+		}
+		val:=rec.Get("PtrNoKey")
+		if val.IsValid() {
+			t.Fail()
+			Error("Expected an invalid value ")
+		}
+	}
+}
+
 func TestMarshalMapIntString(t *testing.T) {
 	tx := initTest(size)
 	nodeRecords := tx.Records()["Node"]
@@ -188,7 +205,7 @@ func TestMarshalMapIntString(t *testing.T) {
 		s2:=strconv.Itoa(4+i)+"=4+"+strconv.Itoa(i)
 		expected1:="["+s1+","+s2+"]"
 		expected2:="["+s2+","+s1+"]"
-		val:=ToString(rec.Get("MapIntString"))
+		val:=rec.Get("MapIntString").String()
 		if val!=expected1 && val!=expected2 {
 			t.Fail()
 			Error("Did not find "+expected1)

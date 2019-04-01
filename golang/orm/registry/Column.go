@@ -27,6 +27,10 @@ func (c *Column) inspect() {
 	}
 }
 
+func (c *Column) Type() reflect.Type {
+	return c.field.Type
+}
+
 func (c *Column) Name() string {
 	return c.field.Name
 }

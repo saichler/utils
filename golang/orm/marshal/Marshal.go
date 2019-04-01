@@ -79,7 +79,6 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 	if tableName=="" {
 		return value,nil
 	}
-
 	table:=r.Table(tableName)
 	if table==nil {
 		panic("Table:"+tableName+" was not registered!")
@@ -125,7 +124,6 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 		}
 		rid.Del()
 	}
-
 	return reflect.ValueOf(recordID),nil
 }
 
@@ -153,17 +151,23 @@ func mapMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persisten
 	if value.IsNil() {
 		return value,nil
 	}
-
+	sb:=utils.NewStringBuilder("[")
 	mapKeys:=value.MapKeys()
-	for _,key:=range mapKeys {
+	for i,key:=range mapKeys {
 		mv:=value.MapIndex(key)
 		v,e:=marshal(mv,r,tx,pr,rid)
 		if e!=nil {
 			panic("Unable To marshal!")
 		}
-		m[key.Interface()]=v.Interface()
+		if i>0 {
+			sb.Append(",")
+		}
+		sb.Append(utils.ToString(key))
+		sb.Append("=")
+		sb.Append(utils.ToString(v))
 	}
-	return reflect.ValueOf(m),nil
+	sb.Append("]")
+	return reflect.ValueOf(sb.String()),nil
 }
 
 func defaultMarshal(value reflect.Value,r *OrmRegistry, tx *Transaction,pr Persistency,rid *RecordID) (reflect.Value,error) {

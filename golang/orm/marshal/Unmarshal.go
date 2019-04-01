@@ -1,7 +1,7 @@
 package marshal
 
 import (
-	"fmt"
+	"github.com/saichler/utils/golang"
 	. "github.com/saichler/utils/golang/orm/common"
 	. "github.com/saichler/utils/golang/orm/registry"
 	. "github.com/saichler/utils/golang/orm/transaction"
@@ -12,7 +12,6 @@ var setters = make(map[reflect.Kind]func(reflect.Value,*Column,*Record,*RecordID
 
 func initSetters(){
 	if len(setters)==0 {
-		fmt.Println("INIT")
 		setters[reflect.Ptr]=setPtr
 		setters[reflect.String]=setDefault
 		setters[reflect.Float32]=setDefault
@@ -107,8 +106,13 @@ func setMap(field reflect.Value,column *Column,record *Record,id *RecordID) {
 }
 
 func setSlice(field reflect.Value,column *Column,record *Record,id *RecordID) {
-	stringValue:=record.Get(column.Name()).String()
-	if stringValue!="" {
-		fmt.Println(stringValue)
+	value:=record.Get(column.Name())
+	vString:=value.String()
+	//This slice is NOT a slice of pointers to a non key table
+	if value.IsValid() && vString!="" {
+		if column.MetaData().ColumnTableName()=="" {
+			v:=utils.FromString(vString,column.Type())
+			field.Set(v)
+		}
 	}
 }
