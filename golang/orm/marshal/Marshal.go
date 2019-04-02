@@ -84,7 +84,7 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 		panic("Table:"+tableName+" was not registered!")
 	}
 
-	rec:=tx.AddRecord(tableName)
+	rec := &Record{}
 	rec.SetInterface(RECORD_LEVEL,rid.Level())
 	if table.Indexes().PrimaryIndex()==nil {
 		rec.SetInterface(RECORD_ID,rid.String()+rid.Index())
@@ -109,6 +109,12 @@ func structMarshal(value reflect.Value,r *OrmRegistry,tx *Transaction,pr Persist
 		recordID = rec.PrimaryIndex(table.Indexes().PrimaryIndex())
 	} else {
 		recordID = rid.Index()
+	}
+
+	if table.Indexes().PrimaryIndex()==nil {
+		tx.AddRecord(rec,tableName,rid.String())
+	} else {
+		tx.AddRecord(rec,tableName,recordID)
 	}
 
 	for _,sbColumn:=range subTables {

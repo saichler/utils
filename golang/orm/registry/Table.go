@@ -45,3 +45,7 @@ func (t *Table) Name() string {
 func (t *Table) NewInstance() reflect.Value {
 	return reflect.New(t.structType)
 }
+
+func (t *Table) OrmRegistry() *OrmRegistry {
+	return t.ormRegistry
+}

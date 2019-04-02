@@ -39,7 +39,7 @@ func findNodeRecords(records []*Record, id int) *Record {
 
 func TestMarshalString(t *testing.T) {
 	tx:=initTest(5)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -51,7 +51,7 @@ func TestMarshalString(t *testing.T) {
 
 func TestMarshalInt(t *testing.T) {
 	tx:=initTest(size)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -69,7 +69,7 @@ func TestMarshalInt(t *testing.T) {
 
 func TestMarshalInt32(t *testing.T) {
 	tx:=initTest(size)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -87,7 +87,7 @@ func TestMarshalInt32(t *testing.T) {
 
 func TestMarshalInt64(t *testing.T) {
 	tx:=initTest(size)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -105,7 +105,7 @@ func TestMarshalInt64(t *testing.T) {
 
 func TestMarshalBool(t *testing.T) {
 	tx:=initTest(size)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -123,7 +123,7 @@ func TestMarshalBool(t *testing.T) {
 
 func TestMarshalPtrKey(t *testing.T) {
 	tx:=initTest(size)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -141,7 +141,7 @@ func TestMarshalPtrKey(t *testing.T) {
 
 func TestMarshalPtrNoKey(t *testing.T) {
 	tx:=initTest(size)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -158,7 +158,7 @@ func TestMarshalPtrNoKey(t *testing.T) {
 
 func TestMarshalSlicePtrWithKey(t *testing.T) {
 	tx:=initTest(size)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -177,7 +177,7 @@ func TestMarshalSlicePtrWithKey(t *testing.T) {
 
 func TestMarshalSlicePtrWithoutKey(t *testing.T) {
 	tx:=initTest(size)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -194,7 +194,7 @@ func TestMarshalSlicePtrWithoutKey(t *testing.T) {
 
 func TestMarshalMapIntString(t *testing.T) {
 	tx := initTest(size)
-	nodeRecords := tx.Records()["Node"]
+	nodeRecords := tx.AllRecords("Node")
 	for i:=0;i<size;i++ {
 		rec := findNodeRecords(nodeRecords, i)
 		if rec == nil {
@@ -215,7 +215,6 @@ func TestMarshalMapIntString(t *testing.T) {
 
 func TestMarshalKeyPath(t *testing.T) {
 	tx := initTest(size)
-	nodeRecords := tx.Records()["SubNode3"]
 	for i1:=0;i1<size;i1++ {
 		si1:=strconv.Itoa(i1)
 		for i2:=0;i2<3;i2++ {
@@ -224,6 +223,10 @@ func TestMarshalKeyPath(t *testing.T) {
 				si3:=strconv.Itoa(i3)
 				expected:="[Node.SubNode2Slice=String-"+si1+"][SubNode2.SliceInSlice="+si2+"]"+si3
 				found:=false
+				id:=NewRecordID()
+				id.Add("Node","SubNode2Slice","String-"+strconv.Itoa(i1))
+				id.Add("SubNode2","SliceInSlice",strconv.Itoa(i2))
+				nodeRecords := tx.Records("SubNode3",id.String())
 				for _,rec:=range nodeRecords {
 					val:=rec.Get(RECORD_ID).String()
 					if val==expected {
@@ -242,13 +245,13 @@ func TestMarshalKeyPath(t *testing.T) {
 
 func TestMarshalNumberOfRecords(t *testing.T) {
 	tx:=initTest(5)
-	nodeRecords:=tx.Records()["Node"]
+	nodeRecords:=tx.AllRecords("Node")
 	if len(nodeRecords)!=30 {
 		t.Fail()
 		Error("Expected 30 but got:"+strconv.Itoa(len(nodeRecords)))
 		return
 	}
-	nodeRecords=tx.Records()["SubNode1"]
+	nodeRecords=tx.AllRecords("SubNode1")
 	if len(nodeRecords)!=20 {
 		t.Fail()
 		Error("Expected 20 but got:"+strconv.Itoa(len(nodeRecords)))

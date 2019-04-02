@@ -163,6 +163,13 @@ func TestUnMarshalPtrSliceNoKey(t *testing.T) {
 			} else if len(node.SubNode1Slice)!=3 {
 				t.Fail()
 				Error("Expected int slice of size 4 but got "+strconv.Itoa(len(node.SliceInt)))
+			} else {
+				for _,sn:=range node.SubNode1Slice {
+					if sn==nil {
+						t.Fail()
+						Error("Nil Entry in slice")
+					}
+				}
 			}
 		}
 		if !found {

@@ -33,6 +33,9 @@ func NewRecordID() *RecordID {
 }
 
 func (rid *RecordID) Add(elementType,elementAttribute,id string) {
+	if rid.entries==nil {
+		panic("RecordID was not created with NewRecordID method.")
+	}
 	ride :=&RecordIDEntry{}
 	ride.elementAttribute = elementAttribute
 	ride.elementId = id
