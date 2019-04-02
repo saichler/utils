@@ -117,7 +117,7 @@ func createSubNodes1(loc int) []*SubNode1 {
 	result:=make([]*SubNode1,3)
 	for i:=0;i<3;i++ {
 		result[i] = &SubNode1{}
-		result[i].String = "SubNode1-"+strconv.Itoa(i)+"-"+strconv.Itoa(loc)
+		result[i].String = "SubNode1-"+strconv.Itoa(loc)+"-"+strconv.Itoa(i)
 	}
 	return result
 }
@@ -126,7 +126,7 @@ func createSubNodes2(loc int) []*SubNode2 {
 	result:=make([]*SubNode2,3)
 	for i:=0;i<3;i++ {
 		result[i] = &SubNode2{}
-		result[i].String = "SubNode2-"+strconv.Itoa(i)+"-"+strconv.Itoa(loc)
+		result[i].String = "SubNode2-"+strconv.Itoa(loc)+"-"+strconv.Itoa(i)
 		result[i].SliceInSlice = createSubNodes3(loc,i)
 	}
 	return result

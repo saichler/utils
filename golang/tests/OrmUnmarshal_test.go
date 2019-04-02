@@ -144,7 +144,7 @@ func TestUnMarshalStringSlice(t *testing.T) {
 	}
 }
 
-func TestUnMarshalPtrSliceNoKey(t *testing.T) {
+func TestUnMarshalPtrKey(t *testing.T) {
 	tx:=&Transaction{}
 	m:=initMarshaler(size,tx)
 	q:=NewQuery("Node",true)
@@ -154,27 +154,46 @@ func TestUnMarshalPtrSliceNoKey(t *testing.T) {
 		Error("Expected:"+strconv.Itoa(size)+" but got "+strconv.Itoa(len(instances)))
 	}
 	for i:=0;i<size;i++ {
-		found:=false
 		for _,n:=range instances {
 			node:=n.(*Node)
-			if node.SubNode1Slice==nil {
+			if node.Ptr==nil {
 				t.Fail()
-				Error("Expected ptr slice to exist")
-			} else if len(node.SubNode1Slice)!=3 {
+				Error("Expected ptr to exist")
+			} else if node.Ptr.String=="" {
 				t.Fail()
-				Error("Expected int slice of size 4 but got "+strconv.Itoa(len(node.SliceInt)))
-			} else {
-				for _,sn:=range node.SubNode1Slice {
-					if sn==nil {
-						t.Fail()
-						Error("Nil Entry in slice")
-					}
-				}
+				Error("Expected ptr name not to be blank ")
 			}
 		}
-		if !found {
+	}
+}
+
+func TestUnMarshalPtrSliceNoKey(t *testing.T) {
+	tx:=&Transaction{}
+	m:=initMarshaler(size,tx)
+	q:=NewQuery("Node",true)
+	instances:=m.UnMarshal(q)
+	if len(instances)!=size {
+		t.Fail()
+		Error("Expected:"+strconv.Itoa(size)+" but got "+strconv.Itoa(len(instances)))
+	}
+	for _,n:=range instances {
+		node:=n.(*Node)
+		if node.SubNode1Slice==nil {
 			t.Fail()
-			Error("Failed to find string in slice ")
+			Error("Expected ptr slice to exist")
+		} else if len(node.SubNode1Slice)!=3 {
+			t.Fail()
+			Error("Expected int slice of size 4 but got "+strconv.Itoa(len(node.SliceInt)))
+		} else {
+			for _,sn:=range node.SubNode1Slice {
+				if sn==nil {
+					t.Fail()
+					Error("Nil Entry in slice")
+				} else if sn.String=="" {
+					t.Fail()
+					Error("Expected String to not be blank")
+				}
+			}
 		}
 	}
 }

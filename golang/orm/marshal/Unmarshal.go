@@ -1,35 +1,33 @@
 package marshal
 
 import (
-	"fmt"
 	"github.com/saichler/utils/golang"
 	. "github.com/saichler/utils/golang/orm/common"
 	. "github.com/saichler/utils/golang/orm/registry"
 	. "github.com/saichler/utils/golang/orm/transaction"
 	"reflect"
-	"strconv"
 )
 
-var setters = make(map[reflect.Kind]func(reflect.Value,*Column,*Record,*RecordID,*Transaction))
+var getters = make(map[reflect.Kind]func(*Column,*Record,*RecordID,*Transaction) reflect.Value)
 
 func initSetters(){
-	if len(setters)==0 {
-		setters[reflect.Ptr]=setPtr
-		setters[reflect.String]=setDefault
-		setters[reflect.Float32]=setDefault
-		setters[reflect.Float64]=setDefault
-		setters[reflect.Uint]=setDefault
-		setters[reflect.Uint16]=setDefault
-		setters[reflect.Uint32]=setDefault
-		setters[reflect.Uint64]=setDefault
-		setters[reflect.Int]=setDefault
-		setters[reflect.Int16]=setDefault
-		setters[reflect.Int32]=setDefault
-		setters[reflect.Int64]=setDefault
-		setters[reflect.Bool]=setDefault
-		setters[reflect.Struct]=setStruct
-		setters[reflect.Map]=setMap
-		setters[reflect.Slice]=setSlice
+	if len(getters)==0 {
+		getters[reflect.Ptr]=getPtr
+		getters[reflect.String]=getDefault
+		getters[reflect.Float32]=getDefault
+		getters[reflect.Float64]=getDefault
+		getters[reflect.Uint]=getDefault
+		getters[reflect.Uint16]=getDefault
+		getters[reflect.Uint32]=getDefault
+		getters[reflect.Uint64]=getDefault
+		getters[reflect.Int]=getDefault
+		getters[reflect.Int16]=getDefault
+		getters[reflect.Int32]=getDefault
+		getters[reflect.Int64]=getDefault
+		getters[reflect.Bool]=getDefault
+		getters[reflect.Struct]=getStruct
+		getters[reflect.Map]=getMap
+		getters[reflect.Slice]=getSlice
 	}
 }
 
@@ -56,15 +54,15 @@ func unmarshal(query *Query, tx *Transaction,ormRegistry *OrmRegistry,id *Record
 			instance := table.NewInstance()
 			result = append(result, instance)
 			for _, column := range table.Columns() {
-				var field reflect.Value
-				if instance.Kind() == reflect.Ptr {
-					field = instance.Elem().FieldByName(column.Name())
-				} else {
-					field = instance.FieldByName(column.Name())
-				}
+				field := instance.Elem().FieldByName(column.Name())
 				key:=record.PrimaryIndex(table.Indexes().PrimaryIndex())
 				id.Add(table.Name(),column.Name(),key)
-				set(field, column, record,id,tx)
+				fv:=get(column,record,id,tx)
+				instance.Elem()
+				//fmt.Println(column.Name())
+				if fv.IsValid() {
+					field.Set(fv)
+				}
 				id.Del()
 			}
 		}
@@ -72,88 +70,93 @@ func unmarshal(query *Query, tx *Transaction,ormRegistry *OrmRegistry,id *Record
 	return result
 }
 
-func set(field reflect.Value,column *Column,record *Record,id *RecordID,tx *Transaction) {
-	setter:=setters[field.Kind()]
-	if setter==nil {
-		panic("No Setter for kind:"+field.Kind().String())
+func get(column *Column,record *Record,id *RecordID,tx *Transaction) reflect.Value {
+	getter:=getters[column.Type().Kind()]
+	if getter==nil {
+		panic("No Getter for kind:"+column.Type().String())
 	}
-	setter(field,column,record,id,tx)
+	return getter(column,record,id,tx)
 }
 
-func setPtr(field reflect.Value,column *Column,record *Record,id *RecordID,tx *Transaction) {
-	ptrKind:=field.Type().Elem().Kind()
+func getPtr(column *Column,record *Record,id *RecordID,tx *Transaction) reflect.Value {
+	ptrKind:=column.Type().Elem().Kind()
 	if ptrKind==reflect.Struct {
-		table:=column.Table().OrmRegistry().Table(column.MetaData().ColumnTableName())
-		if table==nil {
-			panic("Cannot find table with name: "+column.MetaData().ColumnTableName())
-		}
-		if table.Indexes().PrimaryIndex()!=nil {
-			key:=record.Get(column.Name()).String()
-			if key=="" {
-				return
+		table:=column.Table().OrmRegistry().Table(column.Type().Elem().Name())
+		if table.Indexes().PrimaryIndex()==nil {
+			subRecords:=tx.Records(column.MetaData().ColumnTableName(),id.String())
+			if subRecords==nil {
+				return reflect.ValueOf(nil)
 			}
-			rec:=tx.Records(table.Name(),key)
-			please continue here
-			panic("column="+column.Name()+"key="+key+":"+strconv.Itoa(len(rec)))
+			return getStruct(column,subRecords[0],id,tx)
 		}
-		newPtr := reflect.New(field.Type().Elem())
-		field.Set(newPtr)
+		key:=record.Get(column.Name()).String()
+		if key=="" {
+			return reflect.ValueOf(nil)
+		}
+		subRecords:=tx.Records(column.MetaData().ColumnTableName(),key)
+		return getStruct(column,subRecords[0],id,tx)
 	} else if ptrKind==reflect.Slice {
-		newSlice := reflect.MakeSlice(reflect.SliceOf(field.Type().Elem()), 0, 0)
-		field.Elem().Set(newSlice.Elem())
+		newSlice := reflect.MakeSlice(reflect.SliceOf(column.Type().Elem()), 0, 0)
+		//@TODO implement
+		return newSlice
 	} else if ptrKind==reflect.Map {
-		newMap:=reflect.MakeMapWithSize(field.Type(), 0)
-		field.Elem().Set(newMap.Elem())
+		newMap:=reflect.MakeMapWithSize(column.Type(), 0)
+		//@TODO implement
+		return newMap
 	} else {
 		panic("No Ptr Handle of:"+ptrKind.String())
 	}
-	set(field.Elem(),column,record,id,tx)
 }
 
-func setDefault(field reflect.Value,column *Column,record *Record,id *RecordID,tx *Transaction) {
-	field.Set(record.Get(column.Name()))
+func getDefault(column *Column,record *Record,id *RecordID,tx *Transaction) reflect.Value {
+	return record.Get(column.Name())
 }
 
-func setStruct(field reflect.Value,column *Column,record *Record,id *RecordID,tx *Transaction) {
-	table:=column.Table().OrmRegistry().Table(field.Type().Name())
+func getStruct(column *Column,record *Record,id *RecordID,tx *Transaction) reflect.Value {
+	table:=column.Table().OrmRegistry().Table(column.MetaData().ColumnTableName())
 	if table==nil {
-		panic("Cannot find table name:"+field.Type().Name())
+		panic("Cannot find table name:"+column.MetaData().ColumnTableName())
 	}
-	if table.Name()=="Node" {
-		panic(column.Name())
-	}
-	fmt.Println("Struct:"+table.Name()+":"+column.Name())
 	instance := table.NewInstance()
+
 	for _, c := range table.Columns() {
-		var fld reflect.Value
-		if instance.Kind() == reflect.Ptr {
-			fld = instance.Elem().FieldByName(c.Name())
-		} else {
-			fld = instance.FieldByName(c.Name())
-		}
+		fld := instance.Elem().FieldByName(c.Name())
 		var key="0"
 		if table.Indexes().PrimaryIndex()!=nil {
 			key = record.PrimaryIndex(table.Indexes().PrimaryIndex())
+		} else {
+			value:=record.Get(RECORD_ID)
+			if !value.IsValid(){
+				panic(table.Name()+":"+column.Name())
+			}
+			if key=="" {
+
+			}
 		}
 		id.Add(table.Name(),c.Name(),key)
-		set(fld, c, record,id,tx)
+		v:=get(c, record,id,tx)
+		if v.IsValid() {
+			fld.Set(v)
+		}
 		id.Del()
 	}
+	return instance
 }
 
-func setMap(field reflect.Value,column *Column,record *Record,id *RecordID,tx *Transaction) {
+func getMap(column *Column,record *Record,id *RecordID,tx *Transaction) reflect.Value {
+	//@TODO
+	return reflect.ValueOf(nil)
 }
 
-func setSlice(field reflect.Value,column *Column,record *Record,id *RecordID,tx *Transaction) {
+func getSlice(column *Column,record *Record,id *RecordID,tx *Transaction) reflect.Value {
 	value:=record.Get(column.Name())
 	vString:=value.String()
 	if value.IsValid() {
 		if vString==""{
-			return
+			return reflect.ValueOf(nil)
 		}
 		if column.MetaData().ColumnTableName()=="" {
-			v:=utils.FromString(vString,column.Type())
-			field.Set(v)
+			return utils.FromString(vString,column.Type())
 		} else {
 			//Keyed ptr slice
 			/*
@@ -167,18 +170,18 @@ func setSlice(field reflect.Value,column *Column,record *Record,id *RecordID,tx 
 			*/
 		}
 	} else if column.MetaData().ColumnTableName()!="" {
-
 		table:=column.Table().OrmRegistry().Table(column.MetaData().ColumnTableName())
 		if table==nil {
 			panic("No Table was found with name:"+column.MetaData().ColumnTableName())
 		}
-		fmt.Println("Slice "+table.Name()+":"+column.Name())
 		recs:=tx.Records(table.Name(),id.String())
 		newSlice:=reflect.MakeSlice(column.Type(),len(recs),len(recs))
-		for _,rec:=range recs {
-			instance:=table.NewInstance()
-			set(instance.Elem(),column,rec,id,tx)
+		for i,rec:=range recs {
+			elem:=getStruct(column,rec,id,tx)
+			newSlice.Index(i).Set(elem)
+
 		}
-		field.Set(newSlice)
+		return newSlice
 	}
+	return reflect.ValueOf(nil)
 }
