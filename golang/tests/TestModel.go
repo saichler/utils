@@ -10,6 +10,7 @@ type Node struct {
 	String5 string `UniqueKey=uk2:0`
 	String6 string `NonUniqueKey=nuk:0`
 	IntKey int `UniqueKey=uk1:0`
+	Index int
 	Int  int
 	Int32  int32
 	Bool  bool
@@ -146,6 +147,7 @@ func InitTestModel(size int) []*Node {
 	for i:=0;i<size;i++ {
 		n:=&Node{}
 		n.String = "String-"+strconv.Itoa(i)
+		n.Index = i
 		n.Int = -101+i
 		n.Int32 = -102+int32(i)
 		n.Bool = true
