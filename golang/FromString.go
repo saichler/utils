@@ -57,20 +57,22 @@ func ptrFromString(str string,typ reflect.Type) reflect.Value {
 }
 
 func mapFromString(str string,typ reflect.Type) reflect.Value {
-	/*
-	if value.IsNil() {
-		return value
+	str=strings.Trim(str," ")
+	if str=="" {
+		return reflect.ValueOf(nil)
 	}
-	mapKeys := value.MapKeys()
-	mapClone := reflect.MakeMapWithSize(value.Type(), len(mapKeys))
-	for _, key := range mapKeys {
-		mapElem := value.MapIndex(key)
-		mapElemClone := clone(mapElem)
-		mapClone.SetMapIndex(key, mapElemClone)
+	str=str[1:len(str)-1]
+	pairs:=strings.Split(str,",")
+	mapClone := reflect.MakeMapWithSize(typ, len(pairs))
+	for _, pair := range pairs {
+		index:=strings.Index(pair,"=")
+		k:=pair[0:index]
+		v:=pair[index+1:]
+		key:=FromString(k,typ.Key())
+		val:=FromString(v,typ.Elem())
+		mapClone.SetMapIndex(key, val)
 	}
 	return mapClone
-	*/
-	return reflect.ValueOf(str)
 }
 
 func intFromString(str string,typ reflect.Type) reflect.Value {

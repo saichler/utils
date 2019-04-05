@@ -27,10 +27,10 @@ type Node struct {
 	NilSliceOfPtr []*Node
 	SliceInt []int
 	SliceString []string
-	MapStringPtr map[string]*SubNode4
+	MapStringPtrNoKey map[string]*SubNode4
 	MapStringPtrNil map[string]*Node
 	MapIntString map[int]string
-	SubNode1Slice []*SubNode1
+	SlicePtrNoKey []*SubNode1
 	SubNode2Slice []*SubNode2
 	SlicePrimary []*SubNode5
 	MapPrimary map[string]*SubNode6
@@ -106,9 +106,9 @@ func createSubChild(loc int) []*Node {
 		n.SliceInt[1]=544
 		n.SliceString = make([]string,3)
 		n.SliceString[1]="S1"
-		n.MapStringPtr = make(map[string]*SubNode4)
-		n.MapStringPtr["B"]=&SubNode4{}
-		n.MapStringPtr["B"].String = "str"
+		n.MapStringPtrNoKey = make(map[string]*SubNode4)
+		n.MapStringPtrNoKey["B"]=&SubNode4{}
+		n.MapStringPtrNoKey["B"].String = "str"
 		result[i] = n
 	}
 	return result
@@ -142,6 +142,26 @@ func createSubNodes3(loc,loc2 int) []*SubNode3 {
 	return result
 }
 
+func createMapPtrNoKey(loc int) map[string]*SubNode4 {
+	result:=make(map[string]*SubNode4)
+	result[strconv.Itoa(loc)+"-key-1"]=&SubNode4{}
+	result[strconv.Itoa(loc)+"-key-1"].String = "Map-"+strconv.Itoa(loc)+"-1"
+	result[strconv.Itoa(loc)+"-key-2"]=&SubNode4{}
+	result[strconv.Itoa(loc)+"-key-2"].String = "Map-"+strconv.Itoa(loc)+"-2"
+	return result
+}
+
+func createSubNodes6(loc int) map[string]*SubNode6 {
+	result:=make(map[string]*SubNode6)
+	for i:=0;i<2;i++ {
+		key:="k"+strconv.Itoa(i)
+		val:="Subnode6-"+strconv.Itoa(loc)+"-index-"+strconv.Itoa(i)
+		result[key] = &SubNode6{}
+		result[key].String = val
+	}
+	return result
+}
+
 func InitTestModel(size int) []*Node {
 	result:=make([]*Node,size)
 	for i:=0;i<size;i++ {
@@ -166,16 +186,14 @@ func InitTestModel(size int) []*Node {
 		n.SliceInt[3] = 104
 		n.SliceString = make([]string,7)
 		n.SliceString[3]="303"
-		n.MapStringPtr = make(map[string]*SubNode4)
-		for _,child:=range n.SliceOfPtr {
-			n.MapStringPtr[child.String]=&SubNode4{}
-		}
+		n.MapStringPtrNoKey = createMapPtrNoKey(i)
 		n.MapIntString=make(map[int]string)
 		n.MapIntString[3+i] = "3+"+strconv.Itoa(i)
 		n.MapIntString[4+i] = "4+"+strconv.Itoa(i)
 
-		n.SubNode1Slice = createSubNodes1(i)
+		n.SlicePtrNoKey = createSubNodes1(i)
 		n.SubNode2Slice = createSubNodes2(i)
+		n.MapPrimary = createSubNodes6(i)
 		result[i] = n
 	}
 	return result
