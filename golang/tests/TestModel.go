@@ -144,10 +144,10 @@ func createSubNodes3(loc,loc2 int) []*SubNode3 {
 
 func createMapPtrNoKey(loc int) map[string]*SubNode4 {
 	result:=make(map[string]*SubNode4)
-	result[strconv.Itoa(loc)+"-key-1"]=&SubNode4{}
-	result[strconv.Itoa(loc)+"-key-1"].String = "Map-"+strconv.Itoa(loc)+"-1"
-	result[strconv.Itoa(loc)+"-key-2"]=&SubNode4{}
-	result[strconv.Itoa(loc)+"-key-2"].String = "Map-"+strconv.Itoa(loc)+"-2"
+	result["k1-"+strconv.Itoa(loc)]=&SubNode4{}
+	result["k1-"+strconv.Itoa(loc)].String = "Map-"+strconv.Itoa(loc)+"-1"
+	result["k2-"+strconv.Itoa(loc)]=&SubNode4{}
+	result["k2-"+strconv.Itoa(loc)].String = "Map-"+strconv.Itoa(loc)+"-2"
 	return result
 }
 
