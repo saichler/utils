@@ -3,12 +3,13 @@ package tests
 import "strconv"
 
 type Node struct {
-	String string `Title=Hello Size=5 PrimaryKey=name:0`
+	String string `Title=Hello PrimaryKey=name:0`
 	String2 string `Ignore=true`
 	String3 string `Mask=true`
 	String4 string `UniqueKey=uk1:1`
 	String5 string `UniqueKey=uk2:0`
 	String6 string `NonUniqueKey=nuk:0`
+	String7 string `Size=5`
 	IntKey int `UniqueKey=uk1:0`
 	Index int
 	Int  int
