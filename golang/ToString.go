@@ -36,7 +36,7 @@ func ToString(value reflect.Value) string {
 	initToStrings()
 	tostring:=tostrings[value.Kind()]
 	if tostring==nil {
-		panic("No ToString for kind:"+value.Kind().String())
+		panic("No ToString for kind:"+value.Kind().String()+":"+value.String())
 	}
 	return tostring(value)
 }
