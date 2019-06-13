@@ -60,6 +60,7 @@ type SubNode2 struct {
 
 type SubNode3 struct {
 	String string
+	Int int
 	IntSlice []int
 	IntSliceNil []int
 	StringSlice []string
@@ -139,6 +140,7 @@ func createSubNodes3(loc,loc2 int) []*SubNode3 {
 	for i:=0;i<3;i++ {
 		result[i] = &SubNode3{}
 		result[i].String = "SubNode3-"+strconv.Itoa(i)+"-"+strconv.Itoa(loc)+"-"+strconv.Itoa(loc2)
+		result[i].Int=loc2
 	}
 	return result
 }
