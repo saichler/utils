@@ -78,11 +78,11 @@ func (pq *PriorityQueue) Shutdown() {
 	for i := 0; i < 100; i++ {
 		pq.lock.Broadcast()
 	}
-	time.Sleep(time.Second / 10)
+	time.Sleep(time.Second / 5)
 	if pq.shutdown {
 		Info("Priority Queue " + pq.name + " was shutdown properly.")
 	} else {
 		Error("Priority Queue " + pq.name + " was not able to shutdown properly!")
-		panic("")
+		//panic("")
 	}
 }
