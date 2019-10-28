@@ -115,6 +115,19 @@ func (ba *ByteSlice) GetUInt32() uint32 {
 	return result
 }
 
+func (ba *ByteSlice) AddUInt64(i64 uint64) {
+	num := make([]byte, 8)
+	binary.LittleEndian.PutUint64(num, i64)
+	ba.data = append(ba.data, num...)
+	ba.loc += 8
+}
+
+func (ba *ByteSlice) GetUInt64() uint64 {
+	result := binary.LittleEndian.Uint64(ba.data[ba.loc : ba.loc+8])
+	ba.loc += 8;
+	return result
+}
+
 func (ba *ByteSlice) AddBool(b bool) {
 	sb := byte(0)
 	if b {
