@@ -75,14 +75,16 @@ func (pq *PriorityQueue) Pop() interface{} {
 
 func (pq *PriorityQueue) Shutdown() {
 	pq.running = false
-	for i := 0; i < 100; i++ {
+	pq.lock.L.Lock()
+	for i := 0; i < 10; i++ {
 		pq.lock.Broadcast()
 	}
+	pq.lock.L.Unlock()
 	time.Sleep(time.Second / 5)
 	if pq.shutdown {
 		Info("Priority Queue " + pq.name + " was shutdown properly.")
 	} else {
 		Error("Priority Queue " + pq.name + " was not able to shutdown properly!")
-		//panic("")
+		panic("unable to shutdown")
 	}
 }
