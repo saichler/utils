@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/binary"
+	"reflect"
 )
 
 type ByteSlice struct {
@@ -181,6 +182,38 @@ func (ba *ByteSlice) Get() ([]byte, []byte) {
 
 func (ba *ByteSlice) IsEOF() bool {
 	return ba.loc == len(ba.data)
+}
+
+func (ba *ByteSlice) AddGeneric(value interface{}) {
+	val := reflect.ValueOf(value)
+	if !val.IsValid() {
+		ba.AddUInt16(0)
+		return
+	}
+	kind := val.Kind()
+	if kind == reflect.Struct || kind == reflect.Slice || kind == reflect.Map || kind == reflect.Ptr {
+		panic("Unsupported generic type")
+	}
+
+	ba.AddUInt16(uint16(kind))
+
+	if kind == reflect.String {
+		ba.AddString(value.(string))
+	} else {
+		panic("Unhandeled write kind:" + kind.String())
+	}
+
+}
+
+func (ba *ByteSlice) GetGeneric() interface{} {
+	kind := reflect.Kind(ba.GetUInt16())
+	if kind == 0 {
+		return nil
+	}
+	if kind == reflect.String {
+		return ba.GetString()
+	}
+	panic("Unhandled read kind" + kind.String())
 }
 
 func Encode2BoolAndUInt6(b1, b2 bool, i int) byte {
