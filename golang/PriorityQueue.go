@@ -3,7 +3,6 @@ package utils
 import (
 	"strconv"
 	"sync"
-	"time"
 )
 
 type PriorityQueue struct {
@@ -39,52 +38,61 @@ func (pq *PriorityQueue) Push(any interface{}, priority int) error {
 		return nil
 	}
 	err := pq.queues[priority].Push(any)
-	pq.lock.L.Unlock()
 	pq.lock.Broadcast()
+	pq.lock.L.Unlock()
 	return err
 }
 
 func (pq *PriorityQueue) Pop() interface{} {
-	pq.lock.L.Lock()
-	defer pq.lock.L.Unlock()
-
 	for ; pq.running; {
+		pq.lock.L.Lock()
 		if pq.queues[7].size > 0 {
-			return pq.queues[7].Pop()
+			elem := pq.queues[7].Pop()
+			pq.lock.L.Unlock()
+			return elem
 		} else if pq.queues[6].size > 0 {
-			return pq.queues[6].Pop()
+			elem := pq.queues[6].Pop()
+			pq.lock.L.Unlock()
+			return elem
 		} else if pq.queues[5].size > 0 {
-			return pq.queues[5].Pop()
+			elem := pq.queues[5].Pop()
+			pq.lock.L.Unlock()
+			return elem
 		} else if pq.queues[4].size > 0 {
-			return pq.queues[4].Pop()
+			elem := pq.queues[4].Pop()
+			pq.lock.L.Unlock()
+			return elem
 		} else if pq.queues[3].size > 0 {
-			return pq.queues[3].Pop()
+			elem := pq.queues[3].Pop()
+			pq.lock.L.Unlock()
+			return elem
 		} else if pq.queues[2].size > 0 {
-			return pq.queues[2].Pop()
+			elem := pq.queues[2].Pop()
+			pq.lock.L.Unlock()
+			return elem
 		} else if pq.queues[1].size > 0 {
-			return pq.queues[1].Pop()
+			elem := pq.queues[1].Pop()
+			pq.lock.L.Unlock()
+			return elem
 		} else if pq.queues[0].size > 0 {
-			return pq.queues[0].Pop()
+			elem := pq.queues[0].Pop()
+			pq.lock.L.Unlock()
+			return elem
 		} else {
 			pq.lock.Wait()
+			pq.lock.L.Unlock()
 		}
 	}
+	pq.lock.L.Lock()
+	defer pq.lock.L.Unlock()
 	pq.shutdown = true
+	pq.lock.Broadcast()
 	return nil
 }
 
 func (pq *PriorityQueue) Shutdown() {
-	pq.running = false
 	pq.lock.L.Lock()
-	for i := 0; i < 10; i++ {
-		pq.lock.Broadcast()
-	}
+	pq.running = false
+	pq.lock.Broadcast()
 	pq.lock.L.Unlock()
-	time.Sleep(time.Second / 5)
-	if pq.shutdown {
-		Info("Priority Queue " + pq.name + " was shutdown properly.")
-	} else {
-		Error("Priority Queue " + pq.name + " was not able to shutdown properly!")
-		panic("unable to shutdown")
-	}
 }
