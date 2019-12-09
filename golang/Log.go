@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"bytes"
 	"errors"
 	log "github.com/sirupsen/logrus"
 	"net"
@@ -72,4 +73,16 @@ func Read() (string, error) {
 	}
 	inputLine := strings.TrimSpace(string(line[0:n]))
 	return inputLine, nil
+}
+
+func NewError(msg ...string) error {
+	if msg == nil || len(msg) == 0 {
+		return nil
+	}
+	buff := bytes.Buffer{}
+	for _, str := range msg {
+		buff.WriteString(str)
+		buff.WriteString(" ")
+	}
+	return errors.New(buff.String())
 }

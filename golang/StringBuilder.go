@@ -30,3 +30,15 @@ func (sb *StringBuilder) String() string {
 func (sb *StringBuilder) Empty() bool {
 	return sb.buff.Len() == 0
 }
+
+func Join(s ...string) string {
+	if s == nil || len(s) == 0 {
+		return ""
+	}
+	buff := bytes.Buffer{}
+	for _, str := range s {
+		buff.WriteString(str)
+		buff.WriteString(" ")
+	}
+	return buff.String()
+}
