@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package tests;
+
+message ProtoNode {
+    string PString = 1;
+    int32  PInt32  = 2;
+    repeated ProtoSubNode subs = 3;
+}
+
+message ProtoSubNode {
+    string PString = 1;
+    int32  PInt32  = 2;
+}
