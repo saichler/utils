@@ -65,7 +65,7 @@ func (ba *ByteSlice) AddInt64(i64 int64) {
 
 func (ba *ByteSlice) GetInt64() int64 {
 	result := int64(binary.LittleEndian.Uint64(ba.data[ba.loc : ba.loc+8]))
-	ba.loc += 8;
+	ba.loc += 8
 	return result
 }
 
@@ -86,7 +86,7 @@ func (ba *ByteSlice) AddInt32(i32 int32) {
 
 func (ba *ByteSlice) GetInt32() int32 {
 	result := int32(binary.LittleEndian.Uint32(ba.data[ba.loc : ba.loc+4]))
-	ba.loc += 4;
+	ba.loc += 4
 	return result
 }
 
@@ -99,7 +99,7 @@ func (ba *ByteSlice) AddUInt16(i16 uint16) {
 
 func (ba *ByteSlice) GetUInt16() uint16 {
 	result := binary.LittleEndian.Uint16(ba.data[ba.loc : ba.loc+2])
-	ba.loc += 2;
+	ba.loc += 2
 	return result
 }
 
@@ -112,7 +112,7 @@ func (ba *ByteSlice) AddUInt32(i32 uint32) {
 
 func (ba *ByteSlice) GetUInt32() uint32 {
 	result := binary.LittleEndian.Uint32(ba.data[ba.loc : ba.loc+4])
-	ba.loc += 4;
+	ba.loc += 4
 	return result
 }
 
@@ -125,7 +125,7 @@ func (ba *ByteSlice) AddUInt64(i64 uint64) {
 
 func (ba *ByteSlice) GetUInt64() uint64 {
 	result := binary.LittleEndian.Uint64(ba.data[ba.loc : ba.loc+8])
-	ba.loc += 8;
+	ba.loc += 8
 	return result
 }
 
@@ -199,6 +199,10 @@ func (ba *ByteSlice) AddGeneric(value interface{}) {
 
 	if kind == reflect.String {
 		ba.AddString(value.(string))
+	} else if kind == reflect.Int || kind == reflect.Int32 || kind == reflect.Int64 {
+		ba.AddInt64(reflect.ValueOf(value).Int())
+	} else if kind == reflect.Uint || kind == reflect.Uint32 || kind == reflect.Uint64 {
+		ba.AddUInt64(reflect.ValueOf(value).Uint())
 	} else {
 		panic("Unhandeled write kind:" + kind.String())
 	}
