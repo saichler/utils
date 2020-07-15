@@ -3,11 +3,13 @@ package utils
 import (
 	"bytes"
 	"errors"
-	log "github.com/sirupsen/logrus"
+	//log "github.com/sirupsen/logrus"
 	"net"
 	"strings"
 	"sync"
 )
+
+var log = &LogProxy{}
 
 func Fatal(any ...interface{}) {
 	log.Fatal(any)
