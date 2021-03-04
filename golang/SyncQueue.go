@@ -39,7 +39,7 @@ func (q *SyncQueue) Size() int {
 	return len(q.internalQueue)
 }
 
-func (q *SyncQueue) Clear() {
+func (q *SyncQueue) Empty() {
 	q.cond.L.Lock()
 	defer q.cond.L.Unlock()
 	q.internalQueue = make([]interface{}, 0)
