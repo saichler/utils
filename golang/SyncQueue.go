@@ -38,3 +38,9 @@ func (q *SyncQueue) Size() int {
 	defer q.cond.L.Unlock()
 	return len(q.internalQueue)
 }
+
+func (q *SyncQueue) Clear() {
+	q.cond.L.Lock()
+	defer q.cond.L.Unlock()
+	q.internalQueue = make([]interface{}, 0)
+}
